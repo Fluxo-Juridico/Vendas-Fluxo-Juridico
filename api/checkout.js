@@ -98,10 +98,16 @@ export default async function(req,res){
      * A preapproval plan produces a hosted checkout URL without requiring the
      * buyer to be pre-registered as a Mercado Pago payer at creation time.
      */
-    const host=String(
-      req.headers?.host||"escritorio-digital-efj0.hatchable.site"
-    ).replace(/^https?:\/\//,"");
-    const origin="https://"+host;
+    const host=String(req.headers?.["x-forwarded-host"]||req.headers?.host||"")
+      .replace(/^https?:\/\//,"")
+      .trim();
+    if(!host)throw new Error("Host público do checkout não identificado.");
+    const forwardedProto=String(req.headers?.["x-forwarded-proto"]||"https")
+      .split(",")[0]
+      .trim()
+      .toLowerCase();
+    const protocol=forwardedProto==="http"?"http":"https";
+    const origin=protocol+"://"+host;
 
     const checkoutPlan=await mpFetch("/preapproval_plan",{
       method:"POST",
