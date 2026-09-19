@@ -40,6 +40,7 @@ async function walk(root) {
 }
 
 const liveFiles = [];
+const deprecatedVendorToken = ['hat','chable'].join('');
 for (const root of ["api", "platform", "lib", "public", "src"]) liveFiles.push(...await walk(root));
 if (await exists("site.js")) liveFiles.push("site.js");
 
@@ -54,7 +55,7 @@ for (const file of liveFiles) {
   if (!/\.(?:js|mjs|cjs|ts|tsx|jsx|html|json|css)$/i.test(file)) continue;
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (secretPatterns.some(re => re.test(content))) errors.push(`Possível segredo versionado em ${file}`);
-  if (content.includes(".runtime legado.site")) errors.push(`URL externa do provedor antigo encontrada em código ativo: ${file}`);
+  if (file.toLowerCase().includes(deprecatedVendorToken) || content.toLowerCase().includes(deprecatedVendorToken)) errors.push(`Nomenclatura do provedor antigo encontrada em código ativo: ${file}`);
 }
 
 for (const file of liveFiles) {
