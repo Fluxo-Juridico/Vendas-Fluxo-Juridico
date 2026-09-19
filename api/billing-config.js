@@ -1,3 +1,4 @@
+import {allowMethods} from "../lib/http.js";
 import {settings} from "../lib/billing.js";
 
 export const access="public";
@@ -8,6 +9,7 @@ export const methods=["GET"];
  * Secrets and provider credentials are intentionally never returned.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const cfg=await settings();
 
   res.setHeader("Cache-Control","no-store");
