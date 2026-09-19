@@ -1,5 +1,5 @@
 import {allowMethods} from "../../lib/http.js";
-import {db,config,webhooks} from "hatchable";
+import {db,config,webhooks} from "@fluxo-juridico/runtime";
 
 export const access="public";
 export const methods=["POST"];
