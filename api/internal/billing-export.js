@@ -40,7 +40,8 @@ export default async function(req,res){
 
   const {rows}=await db.query(
     `SELECT
-       id,lead_id,plan,billing_cycle,amount_cents,currency,
+       id,lead_id,plan,billing_contract_version,seat_limit,storage_limit_gb,
+       billing_cycle,amount_cents,currency,
        buyer_name,buyer_email,cpf_masked,firm_name,phone,
        provider,provider_plan_id,provider_subscription_id,provider_payment_id,
        payment_status,payment_status_detail,subscription_status,
@@ -57,6 +58,9 @@ export default async function(req,res){
       id:order.id,
       leadId:order.lead_id,
       plan:order.plan,
+      contractVersion:order.billing_contract_version||"billing-v1",
+      seatLimit:Number(order.seat_limit)||0,
+      storageLimitGb:Number(order.storage_limit_gb)||0,
       billingCycle:order.billing_cycle,
       amountCents:Number(order.amount_cents)||0,
       currency:order.currency,
