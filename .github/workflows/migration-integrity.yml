@@ -23,7 +23,18 @@ jobs:
       - name: Install dependencies
         run: npm install --ignore-scripts
       - name: Check migration integrity
-        run: npm run check
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run check 2>&1 | tee check.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Migration integrity"
+            echo '~~~text'
+            cat check.log
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
       - name: Build deployment wrappers
         run: npm run build
       - name: Validate deploy configuration contract
