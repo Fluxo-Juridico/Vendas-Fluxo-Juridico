@@ -1,5 +1,5 @@
 import {timingSafeEqual} from "node:crypto";
-import {db} from "hatchable";
+import {db} from "@fluxo-juridico/runtime";
 import {tryProvision} from "../../lib/billing.js";
 
 export const access="scheduler";
