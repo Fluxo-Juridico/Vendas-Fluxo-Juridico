@@ -1,15 +1,41 @@
+import {timingSafeEqual} from "node:crypto";
 import {db} from "hatchable";
 import {tryProvision} from "../../lib/billing.js";
 
 export const access="scheduler";
-export const methods=["POST"];
+export const methods=["GET"];
+
+function same(a,b){
+  const left=Buffer.from(String(a??""));
+  const right=Buffer.from(String(b??""));
+  return left.length===right.length&&timingSafeEqual(left,right);
+}
+
+function requireCron(req,res){
+  const secret=String(process.env.CRON_SECRET||"");
+  const auth=String(req.headers?.authorization||"");
+  if(!secret){
+    res.status(503).json({error:"CRON_SECRET não configurada."});
+    return false;
+  }
+  if(!auth.startsWith("Bearer ")||!same(auth.slice(7),secret)){
+    res.status(401).json({error:"Não autorizado."});
+    return false;
+  }
+  return true;
+}
 
 /**
- * Hourly recovery job.
- * Retries only orders whose payment state requires a SaaS-side action and whose
- * previous provisioning attempt has not completed.
+ * Recovery job for payment states whose SaaS-side action did not complete.
+ * Vercel Cron invokes this endpoint with GET and CRON_SECRET as a Bearer token.
  */
 export default async function(req,res){
+  if(req.method!=="GET"){
+    res.setHeader("Allow","GET");
+    return res.status(405).json({error:"Método não permitido."});
+  }
+  if(!requireCron(req,res))return;
+
   const {rows}=await db.query(
     `SELECT *
      FROM sales_orders
@@ -27,6 +53,7 @@ export default async function(req,res){
     if(await tryProvision(order))synchronized++;
   }
 
+  res.setHeader("Cache-Control","no-store");
   res.json({
     checked:rows.length,
     synchronized
