@@ -1,6 +1,6 @@
 {
-  "name": "hatchable",
-  "version": "0.0.0-vercel-compat",
+  "name": "@fluxo-juridico/runtime",
+  "version": "1.0.0",
   "type": "module",
   "main": "index.js",
   "private": true
