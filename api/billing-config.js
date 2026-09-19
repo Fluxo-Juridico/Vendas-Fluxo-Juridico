@@ -13,6 +13,7 @@ export default async function(req,res){
   res.setHeader("Cache-Control","no-store");
   res.json({
     enabled:cfg.enabled,
+    saasUrl:cfg.saasBaseUrl||"",
     plans:{
       Solo:{
         price:cfg.prices.Solo,
