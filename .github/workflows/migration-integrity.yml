@@ -24,6 +24,8 @@ jobs:
         run: npm install --ignore-scripts
       - name: Check migration integrity
         run: npm run check
+      - name: Build deployment wrappers
+        run: npm run build
       - name: Validate deploy configuration contract
         run: npm run predeploy
         env:

@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "license": "UNLICENSED",
   "engines": {
     "node": "24.x"
   },
   "scripts": {
+    "build": "node scripts/generate-api-wrappers.mjs",
     "check": "node scripts/check-migration.mjs",
     "predeploy": "node scripts/predeploy-check.mjs"
   },
   "dependencies": {
-    "postgres": "3.4.7",
-    "@fluxo-juridico/runtime": "file:./platform/runtime"
+    "@fluxo-juridico/runtime": "file:./platform/runtime",
+    "postgres": "3.4.7"
   }
 }

@@ -2,18 +2,20 @@
 
 Atualizado em 19/09/2026.
 
-## Referência
+## Referência funcional
 
-Fonte funcional de referência: Hatchable v30.
+Snapshot de referência: v30, preservado em `archive/source-v30/`.
 
 ## Concluído
 
 - Página comercial e APIs ativas versionadas no GitHub.
-- Checkout recorrente Mercado Pago.
-- Webhook com validação HMAC e consulta autoritativa ao provedor.
-- CRM e exportações internas assinadas.
-- Provisionamento assinado para o SaaS principal.
-- URLs antigas do Hatchable removidas do código ativo.
+- Backend organizado com fonte em `server/api/` e `server/lib/`.
+- `api/` reduzido a wrappers de deploy gerados automaticamente.
+- Checkout recorrente Mercado Pago preservado.
+- Webhook com validação HMAC e consulta autoritativa ao provedor preservado.
+- CRM e exportações internas assinadas preservados.
+- Provisionamento assinado para o SaaS principal preservado.
+- Nomenclatura e URLs do provedor anterior removidas do código ativo.
 - `SAAS_BASE_URL` obrigatória para provisionamento.
 - Timeouts com `AbortSignal.timeout`.
 - Schema Postgres/Supabase versionado para leads, pedidos e eventos.
@@ -21,13 +23,12 @@ Fonte funcional de referência: Hatchable v30.
 - Retry de provisionamento autenticado por `CRON_SECRET`.
 - Cron diário preparado em `vercel.json`.
 - Métodos HTTP explicitamente validados.
-- GitHub Actions valida migrations, sintaxe, segredos, URLs antigas e método das rotas.
-- Deploy automático da Vercel desativado durante esta etapa.
-- Snapshot completo da fonte Hatchable v30 preservado em `legacy-source/` para auditoria e comparação.
+- GitHub Actions valida estrutura, build, migrations, sintaxe, segredos, nomenclatura e métodos HTTP.
+- Deploy automático da Vercel permanece desativado nesta etapa.
 
 ## Pendente para homologação
 
-- Aplicar/confirmar a migration no banco de destino.
+- Aplicar e confirmar migrations no banco de destino.
 - Configurar variáveis reais no ambiente de hospedagem.
 - Testar checkout real, webhook, recorrência, cancelamento e retry ponta a ponta.
 - Confirmar integração Vendas → Admin → SaaS antes de publicar domínio.

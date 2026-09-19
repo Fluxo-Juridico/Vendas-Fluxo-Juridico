@@ -1,6 +1,18 @@
 # Fluxo Jurídico — Página de Vendas
 
-Site comercial migrado da versão v30 do Hatchable, com checkout Mercado Pago e CRM.
+Site comercial do Fluxo Jurídico. A implementação funcional de referência é a v30; a infraestrutura ativa está desacoplada do provedor anterior.
+
+## Arquitetura
+
+- `server/api/`: código-fonte das rotas de checkout, webhook, CRM e jobs.
+- `server/lib/`: regras compartilhadas de billing, Mercado Pago e integrações.
+- `api/`: wrappers finos de deploy gerados a partir de `server/api/`.
+- `platform/runtime/`: adaptador local de banco, configuração e HMAC.
+- `archive/source-v30/`: snapshot somente para auditoria e comparação.
+- `supabase/migrations/`: schema e políticas versionadas.
+- arquivos de interface na raiz permanecem inalterados para preservar o comportamento atual.
+
+O código em `archive/` não participa do runtime.
 
 ## Planos
 
@@ -35,9 +47,10 @@ Dados de cartão/CVV não passam pela aplicação.
 - `CHECKOUT_ENABLED`
 - `AUTO_ACTIVATE_ON_APPROVED`
 
-Os preços, limites de usuários e armazenamento também podem ser configurados pelas variáveis documentadas em `.env.example`.
+Preços, usuários e armazenamento também podem ser configurados pelas variáveis documentadas em `.env.example`.
 
+## Validação local/CI
 
-## Recuperação automática
-
-A rota `/api/jobs/retry-provisioning` exige `Authorization: Bearer <CRON_SECRET>` e é preparada para execução diária pelo cron da hospedagem. Ela tenta novamente apenas pedidos em estados de pagamento que exigem ação no SaaS e cujo provisionamento ainda não foi concluído.
+- `npm run check`: valida arquitetura, sintaxe, segredos, contratos e nomenclatura.
+- `npm run build`: regenera os wrappers de `api/` sem alterar a lógica de negócio.
+- `npm run predeploy`: valida o contrato de configuração do ambiente.

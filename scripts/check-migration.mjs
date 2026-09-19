@@ -6,14 +6,35 @@ const errors = [];
 const warnings = [];
 const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
 
-for (const file of ["package.json", ".env.example", "platform/runtime/package.json", "platform/runtime/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql", "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql", "scripts/predeploy-check.mjs"]) {
+const requiredFiles = [
+  "package.json",
+  ".env.example",
+  "platform/runtime/package.json",
+  "platform/runtime/index.js",
+  "server/lib/http.js",
+  "server/lib/billing.js",
+  "scripts/generate-api-wrappers.mjs",
+  "scripts/predeploy-check.mjs",
+  "supabase/migrations/20260919_sales_billing_schema.sql",
+  "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql",
+  "vercel.json"
+];
+
+for (const file of requiredFiles) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
+if (await exists("lib")) {
+  errors.push("Código backend ativo não deve permanecer em lib/; use server/lib.");
+}
+
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
-const runtimeDep = pkg?.dependencies?.['@fluxo-juridico/runtime'];
-if (typeof runtimeDep !== "string" || !runtimeDep.startsWith("file:")) {
-  errors.push("A dependência @fluxo-juridico/runtime deve apontar apenas para a camada local de compatibilidade (file:...).");
+const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
+if (runtimeDep !== "file:./platform/runtime") {
+  errors.push("A dependência @fluxo-juridico/runtime deve apontar para file:./platform/runtime.");
+}
+if (pkg?.scripts?.build !== "node scripts/generate-api-wrappers.mjs") {
+  errors.push("O build deve gerar somente os wrappers de api/ a partir de server/api.");
 }
 
 const envExample = await fs.readFile(".env.example", "utf8").catch(() => "");
@@ -39,11 +60,27 @@ async function walk(root) {
   return out;
 }
 
-const liveFiles = [];
-const deprecatedVendorToken = ['hat','chable'].join('');
-for (const root of ["api", "platform", "lib", "public", "src"]) liveFiles.push(...await walk(root));
-if (await exists("site.js")) liveFiles.push("site.js");
+const serverApiFiles = (await walk("server/api")).filter(file => /\.js$/i.test(file));
+const wrapperFiles = (await walk("api")).filter(file => /\.js$/i.test(file));
+if (!serverApiFiles.length) errors.push("Nenhuma rota fonte encontrada em server/api.");
+if (serverApiFiles.length !== wrapperFiles.length) {
+  errors.push(`Quantidade de wrappers em api/ (${wrapperFiles.length}) difere das rotas fonte em server/api (${serverApiFiles.length}).`);
+}
 
+for (const file of wrapperFiles) {
+  const content = await fs.readFile(file, "utf8").catch(() => "");
+  if (!content.includes("server/api/")) errors.push(`Wrapper fora do padrão server/api: ${file}`);
+}
+
+const activeFiles = [
+  ...await walk("api"),
+  ...await walk("server"),
+  ...await walk("platform"),
+  ...await walk("scripts")
+];
+for (const file of ["index.html","site.js","site.css","motion.css"]) if (await exists(file)) activeFiles.push(file);
+
+const deprecatedVendorToken = ["hat","chable"].join("");
 const secretPatterns = [
   /APP_USR-[0-9A-Za-z_-]{20,}/,
   /TEST-[0-9A-Za-z_-]{20,}/,
@@ -51,14 +88,16 @@ const secretPatterns = [
   /BILLING_BRIDGE_SECRET\s*=\s*[^\s#]+/
 ];
 
-for (const file of liveFiles) {
+for (const file of activeFiles) {
   if (!/\.(?:js|mjs|cjs|ts|tsx|jsx|html|json|css)$/i.test(file)) continue;
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (secretPatterns.some(re => re.test(content))) errors.push(`Possível segredo versionado em ${file}`);
-  if (file.toLowerCase().includes(deprecatedVendorToken) || content.toLowerCase().includes(deprecatedVendorToken)) errors.push(`Nomenclatura do provedor antigo encontrada em código ativo: ${file}`);
+  if (file.toLowerCase().includes(deprecatedVendorToken) || content.toLowerCase().includes(deprecatedVendorToken)) {
+    errors.push(`Nomenclatura do provedor antigo encontrada em código ativo: ${file}`);
+  }
 }
 
-for (const file of liveFiles) {
+for (const file of activeFiles) {
   if (!/\.(?:js|mjs|cjs)$/i.test(file)) continue;
   const checked = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
   if (checked.status !== 0) {
@@ -66,12 +105,9 @@ for (const file of liveFiles) {
   }
 }
 
-if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
-if (!liveFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pagamento não localizado automaticamente.");
-
-const billingSource = await fs.readFile("lib/billing.js", "utf8").catch(() => "");
-const checkoutSource = await fs.readFile("api/checkout.js", "utf8").catch(() => "");
-const exportSource = await fs.readFile("api/internal/billing-export.js", "utf8").catch(() => "");
+const billingSource = await fs.readFile("server/lib/billing.js", "utf8").catch(() => "");
+const checkoutSource = await fs.readFile("server/api/checkout.js", "utf8").catch(() => "");
+const exportSource = await fs.readFile("server/api/internal/billing-export.js", "utf8").catch(() => "");
 for (const [label,source,tokens] of [
   ["billing",billingSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]],
   ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","seat_limit","storage_limit_gb"]],
@@ -82,8 +118,7 @@ for (const [label,source,tokens] of [
   }
 }
 
-const apiFiles = (await walk("api")).filter(file => /\.js$/i.test(file));
-for (const file of apiFiles) {
+for (const file of serverApiFiles) {
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (
     content.includes("export const methods=") &&
@@ -94,6 +129,9 @@ for (const file of apiFiles) {
   }
 }
 
+if (!serverApiFiles.some(file => /checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
+if (!serverApiFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pagamento não localizado automaticamente.");
+
 if (errors.length) {
   console.error(JSON.stringify({ ok: false, errors, warnings }, null, 2));
   process.exit(1);
@@ -102,7 +140,8 @@ if (errors.length) {
 console.log(JSON.stringify({
   ok: true,
   app: "fluxo-juridico-vendas",
+  architecture: "server-source-plus-api-wrappers",
   localRuntimeAdapter: true,
-  liveFiles: liveFiles.length,
+  serverApiFiles: serverApiFiles.length,
   warnings
 }, null, 2));
