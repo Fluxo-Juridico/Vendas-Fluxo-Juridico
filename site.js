@@ -181,6 +181,18 @@ function safeSaasHref(){
 
 function applyPlanUI(config){
   const plans=config.plans||{};
+  const saasBase=safeSaasHref();
+  $('[data-saas-login]').forEach(link=>{
+    if(!saasBase){
+      link.setAttribute('href','#planos');
+      return;
+    }
+    try{
+      link.setAttribute('href',new URL('/login',saasBase).href);
+    }catch{
+      link.setAttribute('href','#planos');
+    }
+  });
   $$('[data-plan-price]').forEach(el=>{
     const p=plans[el.dataset.planPrice],price=Number(p?.price)||0;
     if(price>0)el.textContent=brl(price);
