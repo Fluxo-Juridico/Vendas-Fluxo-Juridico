@@ -92,4 +92,24 @@ CREATE INDEX IF NOT EXISTS sales_payment_events_order_idx
 CREATE INDEX IF NOT EXISTS sales_payment_events_created_idx
   ON sales_payment_events (created_at DESC);
 
+
+ALTER TABLE sales_leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sales_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sales_payment_events ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE sales_leads, sales_orders, sales_payment_events FROM anon, authenticated;
+REVOKE ALL ON SEQUENCE sales_payment_events_id_seq FROM anon, authenticated;
+
+DROP POLICY IF EXISTS deny_direct_client_access ON sales_leads;
+CREATE POLICY deny_direct_client_access ON sales_leads
+  FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
+DROP POLICY IF EXISTS deny_direct_client_access ON sales_orders;
+CREATE POLICY deny_direct_client_access ON sales_orders
+  FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
+DROP POLICY IF EXISTS deny_direct_client_access ON sales_payment_events;
+CREATE POLICY deny_direct_client_access ON sales_payment_events
+  FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
 COMMIT;
