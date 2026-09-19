@@ -157,6 +157,7 @@ form?.addEventListener('submit',async e=>{
    Live values from /api/billing-config always override them. */
 let billingConfig={
   enabled:false,
+  saasUrl:'',
   plans:{
     Solo:{price:99,seats:2,storageGb:5},
     Essencial:{price:197,seats:3,storageGb:15},
@@ -169,6 +170,14 @@ const checkoutForm=$('#checkoutForm');
 const checkoutStatus=$('#checkoutStatus');
 const checkoutResult=$('#checkoutResult');
 const brl=value=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(value)||0);
+function safeSaasHref(){
+  try{
+    const url=new URL(String(billingConfig.saasUrl||''));
+    return ['https:','http:'].includes(url.protocol)?url.href:'';
+  }catch{
+    return '';
+  }
+}
 
 function applyPlanUI(config){
   const plans=config.plans||{};
@@ -285,7 +294,8 @@ async function showPaymentReturn(orderId){
       if(!r.ok)throw new Error(data.error||'Não foi possível consultar o pagamento.');
       const msg=resultMessage(data);
       checkoutResult.className='checkout-result '+msg.cls;
-      checkoutResult.innerHTML=msg.html+(data.status==='approved'&&data.provisioningStatus==='activated'?'<div class="result-actions"><a href="https://brito-vilarinho.hatchable.site">Entrar no sistema →</a></div>':'');
+      const saasHref=safeSaasHref();
+      checkoutResult.innerHTML=msg.html+(data.status==='approved'&&data.provisioningStatus==='activated'&&saasHref?'<div class="result-actions"><a href="'+saasHref+'">Entrar no sistema →</a></div>':'');
       if(!['pending','created'].includes(data.status))break;
     }catch(error){
       checkoutResult.className='checkout-result problem';
@@ -300,10 +310,12 @@ async function showPaymentReturn(orderId){
 const checkoutReturn=params.get('checkout')==='return'?(params.get('order')||sessionStorage.getItem('ed:last-order')):'';
 if(checkoutReturn){
   history.replaceState({},'',location.pathname);
-  showPaymentReturn(checkoutReturn);
 }
 
-/* Initial render. */
+/* Initial render. Runtime billing config is loaded before a payment-return
+   message so the login destination always comes from SAAS_BASE_URL. */
 renderTour();
-loadBillingConfig();
+loadBillingConfig().finally(()=>{
+  if(checkoutReturn)showPaymentReturn(checkoutReturn);
+});
 })();
