@@ -71,8 +71,12 @@ if (!liveFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pa
 const billingSource = await fs.readFile("lib/billing.js", "utf8").catch(() => "");
 const checkoutSource = await fs.readFile("api/checkout.js", "utf8").catch(() => "");
 const exportSource = await fs.readFile("api/internal/billing-export.js", "utf8").catch(() => "");
-for (const [label,source] of [["billing",billingSource],["checkout",checkoutSource],["billing-export",exportSource]]) {
-  for (const token of ["billing-v1","seat_limit","storage_limit_gb"]) {
+for (const [label,source,tokens] of [
+  ["billing",billingSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]],
+  ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","seat_limit","storage_limit_gb"]],
+  ["billing-export",exportSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]]
+]) {
+  for (const token of tokens) {
     if (!source.includes(token)) errors.push(`Contrato de billing incompleto em ${label}: falta ${token}`);
   }
 }
