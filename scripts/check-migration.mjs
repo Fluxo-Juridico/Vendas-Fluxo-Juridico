@@ -5,7 +5,7 @@ const errors = [];
 const warnings = [];
 const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
 
-for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js"]) {
+for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "supabase/migrations/20260919_sales_billing_schema.sql"]) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
@@ -51,6 +51,7 @@ for (const file of liveFiles) {
   if (!/\.(?:js|mjs|cjs|ts|tsx|jsx|html|json|css)$/i.test(file)) continue;
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (secretPatterns.some(re => re.test(content))) errors.push(`Possível segredo versionado em ${file}`);
+  if (content.includes(".hatchable.site")) errors.push(`URL externa do Hatchable encontrada em código ativo: ${file}`);
 }
 
 if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
