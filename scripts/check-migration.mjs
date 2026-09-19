@@ -1,0 +1,70 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
+const errors = [];
+const warnings = [];
+const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
+
+for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js"]) {
+  if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
+}
+
+const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+const hatchableDep = pkg?.dependencies?.hatchable;
+if (typeof hatchableDep !== "string" || !hatchableDep.startsWith("file:")) {
+  errors.push("A dependência hatchable deve apontar apenas para a camada local de compatibilidade (file:...).");
+}
+
+const envExample = await fs.readFile(".env.example", "utf8").catch(() => "");
+for (const key of [
+  "DATABASE_URL",
+  "MERCADO_PAGO_ACCESS_TOKEN",
+  "MERCADO_PAGO_WEBHOOK_SECRET",
+  "BILLING_BRIDGE_SECRET",
+  "SAAS_BASE_URL"
+]) {
+  if (!new RegExp(`^${key}=`, "m").test(envExample)) errors.push(`.env.example não documenta ${key}`);
+}
+
+async function walk(root) {
+  if (!await exists(root)) return [];
+  const out = [];
+  for (const entry of await fs.readdir(root, { withFileTypes: true })) {
+    const full = path.join(root, entry.name);
+    if (entry.isDirectory()) out.push(...await walk(full));
+    else out.push(full);
+  }
+  return out;
+}
+
+const liveFiles = [];
+for (const root of ["api", "compat", "public", "src"]) liveFiles.push(...await walk(root));
+
+const secretPatterns = [
+  /APP_USR-[0-9A-Za-z_-]{20,}/,
+  /TEST-[0-9A-Za-z_-]{20,}/,
+  /sb_secret_[0-9A-Za-z_-]{12,}/,
+  /BILLING_BRIDGE_SECRET\s*=\s*[^\s#]+/
+];
+
+for (const file of liveFiles) {
+  if (!/\.(?:js|mjs|cjs|ts|tsx|jsx|html|json|css)$/i.test(file)) continue;
+  const content = await fs.readFile(file, "utf8").catch(() => "");
+  if (secretPatterns.some(re => re.test(content))) errors.push(`Possível segredo versionado em ${file}`);
+}
+
+if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
+if (!liveFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pagamento não localizado automaticamente.");
+
+if (errors.length) {
+  console.error(JSON.stringify({ ok: false, errors, warnings }, null, 2));
+  process.exit(1);
+}
+
+console.log(JSON.stringify({
+  ok: true,
+  app: "fluxo-juridico-vendas",
+  localHatchableCompat: true,
+  liveFiles: liveFiles.length,
+  warnings
+}, null, 2));
