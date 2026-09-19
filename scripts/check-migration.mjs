@@ -6,7 +6,7 @@ const errors = [];
 const warnings = [];
 const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
 
-for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql", "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql", "scripts/predeploy-check.mjs"]) {
+for (const file of ["package.json", ".env.example", "platform/runtime/package.json", "platform/runtime/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql", "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql", "scripts/predeploy-check.mjs"]) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
@@ -40,7 +40,7 @@ async function walk(root) {
 }
 
 const liveFiles = [];
-for (const root of ["api", "compat", "lib", "public", "src"]) liveFiles.push(...await walk(root));
+for (const root of ["api", "platform", "lib", "public", "src"]) liveFiles.push(...await walk(root));
 if (await exists("site.js")) liveFiles.push("site.js");
 
 const secretPatterns = [
@@ -101,7 +101,7 @@ if (errors.length) {
 console.log(JSON.stringify({
   ok: true,
   app: "fluxo-juridico-vendas",
-  localHatchableCompat: true,
+  localRuntimeAdapter: true,
   liveFiles: liveFiles.length,
   warnings
 }, null, 2));
