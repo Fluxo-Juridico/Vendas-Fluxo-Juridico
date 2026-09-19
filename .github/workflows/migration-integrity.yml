@@ -24,3 +24,12 @@ jobs:
         run: npm install --ignore-scripts
       - name: Check migration integrity
         run: npm run check
+      - name: Validate deploy configuration contract
+        run: npm run predeploy
+        env:
+          DATABASE_URL: postgresql://ci:ci@db.example.com:5432/postgres
+          MERCADO_PAGO_ACCESS_TOKEN: APP_USR_ci_placeholder_1234567890
+          MERCADO_PAGO_WEBHOOK_SECRET: webhook_ci_placeholder_1234567890
+          BILLING_BRIDGE_SECRET: billing_bridge_ci_placeholder_1234567890
+          CRON_SECRET: cron_ci_placeholder_12345678901234567890
+          SAAS_BASE_URL: https://saas.example.com
