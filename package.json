@@ -1,21 +1,13 @@
 {
-  "name": "p-gina-de-vendas---fluxo-jur-dico",
-  "version": "0.1.0",
+  "name": "fluxo-juridico-vendas",
+  "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+  "type": "module",
+  "engines": {
+    "node": "24.x"
   },
   "dependencies": {
-    "next": "15.5.3",
-    "react": "19.1.1",
-    "react-dom": "19.1.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "typescript": "^5"
+    "hatchable": "file:./compat/hatchable",
+    "postgres": "3.4.7"
   }
 }
