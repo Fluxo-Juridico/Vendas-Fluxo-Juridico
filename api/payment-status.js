@@ -1,3 +1,4 @@
+import {allowMethods} from "../lib/http.js";
 import {db} from "hatchable";
 
 export const access="public";
@@ -8,6 +9,7 @@ export const methods=["GET"];
  * It exposes only the minimum state required by the buyer-facing UI.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const orderId=String(req.query?.order||"");
 
   if(!/^[0-9a-f-]{36}$/i.test(orderId)){
