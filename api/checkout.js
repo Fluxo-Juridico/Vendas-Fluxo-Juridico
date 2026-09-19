@@ -1,5 +1,5 @@
 import {allowMethods} from "../lib/http.js";
-import {db} from "hatchable";
+import {db} from "@fluxo-juridico/runtime";
 import {
   ALLOWED_PLANS,
   clean,
