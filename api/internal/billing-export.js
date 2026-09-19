@@ -1,3 +1,4 @@
+import {allowMethods} from "../../lib/http.js";
 import {db,config,webhooks} from "hatchable";
 
 export const access="public";
@@ -9,6 +10,7 @@ export const methods=["GET"];
  * but every request must pass the shared BILLING_BRIDGE_SECRET signature check.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const secret=await config.get("BILLING_BRIDGE_SECRET");
   if(!secret){
     return res.status(503).json({error:"Ponte de cobrança não configurada."});
