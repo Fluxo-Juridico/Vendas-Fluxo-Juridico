@@ -8,6 +8,9 @@ import {
   validEmail,
   validCPF,
   maskCPF,
+  BILLING_CONTRACT_VERSION,
+  seatsFor,
+  storageGbFor,
   settings,
   mpFetch,
   upsertLeadForCheckout
@@ -50,6 +53,8 @@ export default async function(req,res){
 
   const cfg=await settings();
   const amount=Number(cfg.prices[plan])||0;
+  const seatLimit=seatsFor(plan,cfg);
+  const storageLimitGb=storageGbFor(plan,cfg);
 
   if(!cfg.enabled){
     return res.status(503).json({
@@ -79,14 +84,18 @@ export default async function(req,res){
     await db.query(
       `INSERT INTO sales_orders (
         id,lead_id,plan,billing_cycle,amount_cents,
+        billing_contract_version,seat_limit,storage_limit_gb,
         buyer_name,buyer_email,cpf_masked,cpf_last4,firm_name,phone,payment_status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'created')`,
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'created')`,
       [
         orderId,
         leadId,
         plan,
         billingCycle,
         amountCents,
+        BILLING_CONTRACT_VERSION,
+        seatLimit,
+        storageLimitGb,
         name,
         email,
         maskCPF(cpf),
@@ -154,7 +163,10 @@ export default async function(req,res){
       orderId,
       checkoutUrl,
       plan,
-      amountCents
+      amountCents,
+      contractVersion:BILLING_CONTRACT_VERSION,
+      seatLimit,
+      storageLimitGb
     });
   }catch(error){
     const internalMessage=clean(error?.message||error,500);
