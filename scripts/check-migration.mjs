@@ -6,7 +6,7 @@ const errors = [];
 const warnings = [];
 const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
 
-for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql"]) {
+for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql", "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql", "scripts/predeploy-check.mjs"]) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
@@ -67,6 +67,15 @@ for (const file of liveFiles) {
 
 if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
 if (!liveFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pagamento não localizado automaticamente.");
+
+const billingSource = await fs.readFile("lib/billing.js", "utf8").catch(() => "");
+const checkoutSource = await fs.readFile("api/checkout.js", "utf8").catch(() => "");
+const exportSource = await fs.readFile("api/internal/billing-export.js", "utf8").catch(() => "");
+for (const [label,source] of [["billing",billingSource],["checkout",checkoutSource],["billing-export",exportSource]]) {
+  for (const token of ["billing-v1","seat_limit","storage_limit_gb"]) {
+    if (!source.includes(token)) errors.push(`Contrato de billing incompleto em ${label}: falta ${token}`);
+  }
+}
 
 const apiFiles = (await walk("api")).filter(file => /\.js$/i.test(file));
 for (const file of apiFiles) {
