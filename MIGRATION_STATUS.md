@@ -23,6 +23,7 @@ Fonte funcional de referência: Hatchable v30.
 - Métodos HTTP explicitamente validados.
 - GitHub Actions valida migrations, sintaxe, segredos, URLs antigas e método das rotas.
 - Deploy automático da Vercel desativado durante esta etapa.
+- Snapshot completo da fonte Hatchable v30 preservado em `legacy-source/` para auditoria e comparação.
 
 ## Pendente para homologação
 
