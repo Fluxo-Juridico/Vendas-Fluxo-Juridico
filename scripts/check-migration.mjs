@@ -6,7 +6,7 @@ const errors = [];
 const warnings = [];
 const exists = async p => fs.access(path.resolve(p)).then(() => true).catch(() => false);
 
-for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "supabase/migrations/20260919_sales_billing_schema.sql"]) {
+for (const file of ["package.json", ".env.example", "compat/hatchable/package.json", "compat/hatchable/index.js", "lib/http.js", "supabase/migrations/20260919_sales_billing_schema.sql"]) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
@@ -67,6 +67,18 @@ for (const file of liveFiles) {
 
 if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
 if (!liveFiles.some(file => /webhook/i.test(file))) warnings.push("Webhook de pagamento não localizado automaticamente.");
+
+const apiFiles = (await walk("api")).filter(file => /\.js$/i.test(file));
+for (const file of apiFiles) {
+  const content = await fs.readFile(file, "utf8").catch(() => "");
+  if (
+    content.includes("export const methods=") &&
+    !content.includes("allowMethods(req,res,methods)") &&
+    !content.includes("req.method")
+  ) {
+    errors.push(`Rota com methods sem enforcement HTTP: ${file}`);
+  }
+}
 
 if (errors.length) {
   console.error(JSON.stringify({ ok: false, errors, warnings }, null, 2));
