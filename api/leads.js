@@ -1,3 +1,4 @@
+import {allowMethods} from "../lib/http.js";
 import {db} from "hatchable";
 
 export const access="public";
@@ -11,6 +12,7 @@ const validEmail=value=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
  * The honeypot silently accepts bot submissions without persisting them.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const honeypot=clean(req.body?.website,100);
   if(honeypot)return res.json({ok:true});
 
