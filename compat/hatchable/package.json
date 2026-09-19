@@ -1,0 +1,7 @@
+{
+  "name": "hatchable",
+  "version": "0.0.0-vercel-compat",
+  "type": "module",
+  "main": "index.js",
+  "private": true
+}
