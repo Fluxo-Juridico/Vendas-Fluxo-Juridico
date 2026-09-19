@@ -8,7 +8,7 @@
   },
   "scripts": {
     "check": "node scripts/check-migration.mjs",
-    "predeploy": "node scripts/check-migration.mjs"
+    "predeploy": "node scripts/predeploy-check.mjs"
   },
   "dependencies": {
     "hatchable": "file:./compat/hatchable",
