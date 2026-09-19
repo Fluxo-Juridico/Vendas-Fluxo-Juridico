@@ -21,6 +21,7 @@ for (const key of [
   "MERCADO_PAGO_ACCESS_TOKEN",
   "MERCADO_PAGO_WEBHOOK_SECRET",
   "BILLING_BRIDGE_SECRET",
+  "CRON_SECRET",
   "SAAS_BASE_URL"
 ]) {
   if (!new RegExp(`^${key}=`, "m").test(envExample)) errors.push(`.env.example não documenta ${key}`);
