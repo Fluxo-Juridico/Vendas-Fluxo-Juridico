@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import {spawnSync} from "node:child_process";
 
 const errors = [];
 const warnings = [];
@@ -39,7 +40,8 @@ async function walk(root) {
 }
 
 const liveFiles = [];
-for (const root of ["api", "compat", "public", "src"]) liveFiles.push(...await walk(root));
+for (const root of ["api", "compat", "lib", "public", "src"]) liveFiles.push(...await walk(root));
+if (await exists("site.js")) liveFiles.push("site.js");
 
 const secretPatterns = [
   /APP_USR-[0-9A-Za-z_-]{20,}/,
@@ -53,6 +55,14 @@ for (const file of liveFiles) {
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (secretPatterns.some(re => re.test(content))) errors.push(`Possível segredo versionado em ${file}`);
   if (content.includes(".hatchable.site")) errors.push(`URL externa do Hatchable encontrada em código ativo: ${file}`);
+}
+
+for (const file of liveFiles) {
+  if (!/\.(?:js|mjs|cjs)$/i.test(file)) continue;
+  const checked = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
+  if (checked.status !== 0) {
+    errors.push(`Falha de sintaxe em ${file}: ${String(checked.stderr||checked.stdout||"").trim().slice(0,500)}`);
+  }
 }
 
 if (!liveFiles.some(file => /api[\\/]checkout/i.test(file))) warnings.push("Rota de checkout não localizada automaticamente.");
