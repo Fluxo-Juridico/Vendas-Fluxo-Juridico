@@ -1,3 +1,4 @@
+import {allowMethods} from "../../lib/http.js";
 import {db,config,webhooks} from "hatchable";
 import {
   mpFetch,
@@ -157,6 +158,7 @@ async function applyPayment(order,payment){
 
 /* ------------------------------- Handler -------------------------------- */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const secret=await config.get("MERCADO_PAGO_WEBHOOK_SECRET");
   if(!secret){
     return res.status(503).json({error:"Webhook ainda não configurado."});
