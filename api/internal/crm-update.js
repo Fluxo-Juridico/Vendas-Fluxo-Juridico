@@ -1,3 +1,4 @@
+import {allowMethods} from "../../lib/http.js";
 import {db,config,webhooks} from "hatchable";
 
 export const access="public";
@@ -51,6 +52,7 @@ function mapLead(row){
  * Signed CRM mutation endpoint used by the private admin console.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const secret=await config.get("BILLING_BRIDGE_SECRET");
   if(!secret){
     return res.status(503).json({error:"Ponte entre projetos não configurada."});
