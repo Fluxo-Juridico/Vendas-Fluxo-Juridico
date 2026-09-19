@@ -1,3 +1,4 @@
+import {allowMethods} from "../lib/http.js";
 import {db} from "hatchable";
 import {
   ALLOWED_PLANS,
@@ -25,6 +26,7 @@ export const methods=["POST"];
  * - final payment state is confirmed asynchronously by webhook.
  */
 export default async function(req,res){
+  if(!allowMethods(req,res,methods))return;
   const plan=clean(req.body?.plan,40);
   const name=clean(req.body?.name,180);
   const email=emailOf(req.body?.email);
