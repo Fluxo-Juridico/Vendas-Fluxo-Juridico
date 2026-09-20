@@ -18,14 +18,15 @@ function positive(name,value){
   if(!Number.isFinite(n)||n<=0)errors.push(`${name} must be a positive number`);
 }
 
-const databaseUrl=required("DATABASE_URL");
+const databaseUrl=String(process.env.DATABASE_URL||process.env.POSTGRES_URL||process.env.POSTGRES_PRISMA_URL||"").trim();
+if(!databaseUrl)errors.push("Missing database connection: DATABASE_URL (or POSTGRES_URL).");
 const mpToken=required("MERCADO_PAGO_ACCESS_TOKEN");
 const webhookSecret=required("MERCADO_PAGO_WEBHOOK_SECRET");
 const bridgeSecret=required("BILLING_BRIDGE_SECRET");
 const cronSecret=required("CRON_SECRET");
 const saasBaseUrl=required("SAAS_BASE_URL");
 
-if(databaseUrl&&!/^postgres(?:ql)?:\/\//i.test(databaseUrl))errors.push("DATABASE_URL must be a PostgreSQL connection URL.");
+if(databaseUrl&&!/^postgres(?:ql)?:\/\//i.test(databaseUrl))errors.push("Database connection must be a PostgreSQL URL.");
 if(mpToken&&mpToken.length<20)errors.push("MERCADO_PAGO_ACCESS_TOKEN looks too short.");
 if(webhookSecret&&webhookSecret.length<16)errors.push("MERCADO_PAGO_WEBHOOK_SECRET looks too short.");
 if(bridgeSecret&&bridgeSecret.length<24)errors.push("BILLING_BRIDGE_SECRET must contain at least 24 characters.");
