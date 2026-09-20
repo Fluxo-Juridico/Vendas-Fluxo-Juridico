@@ -3,6 +3,8 @@ import path from "node:path";
 
 const serverRoot = path.resolve("server/api");
 const targetRoot = path.resolve("api");
+const publicRoot = path.resolve("public");
+const publicFiles = ["index.html", "site.css", "motion.css", "site.js"];
 
 async function walk(dir) {
   const out = [];
@@ -18,6 +20,12 @@ const files = await walk(serverRoot).catch(() => []);
 if (!files.length) throw new Error("Nenhuma rota fonte encontrada em server/api.");
 
 await fs.rm(targetRoot, { recursive: true, force: true });
+await fs.rm(publicRoot, { recursive: true, force: true });
+await fs.mkdir(publicRoot, { recursive: true });
+
+for (const file of publicFiles) {
+  await fs.copyFile(path.resolve(file), path.join(publicRoot, file));
+}
 
 for (const source of files) {
   const relative = path.relative(serverRoot, source);
@@ -33,4 +41,4 @@ for (const source of files) {
   await fs.writeFile(target, wrapper);
 }
 
-console.log(`Generated ${files.length} API wrapper(s) from server/api.`);
+console.log(`Generated ${files.length} API wrapper(s) and ${publicFiles.length} public asset(s).`);
