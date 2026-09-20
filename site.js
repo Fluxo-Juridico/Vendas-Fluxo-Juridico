@@ -182,7 +182,7 @@ function safeSaasHref(){
 function applyPlanUI(config){
   const plans=config.plans||{};
   const saasBase=safeSaasHref();
-  $('[data-saas-login]').forEach(link=>{
+  document.querySelectorAll('[data-saas-login]').forEach(link=>{
     if(!saasBase){
       link.setAttribute('href','#planos');
       return;
