@@ -10,7 +10,8 @@ import {
   mpFetch,
   normalizePaymentStatus,
   settings,
-  signedBridgeRequest
+  signedBridgeRequest,
+  tryProvision
 } from "../../lib/billing.js";
 import {allowMethods} from "../../lib/http.js";
 
@@ -190,6 +191,19 @@ export default async function(req,res){
     const {account,order}=await billingContext({organizationId,email});
 
     if(action==="inspect"){
+      let syncPending=clean(order?.provisioning_status,40)==="retry";
+      let syncRecovered=false;
+      const updatedAt=order?.updated_at?new Date(order.updated_at).getTime():0;
+      const retryOldEnough=!Number.isFinite(updatedAt)||Date.now()-updatedAt>=15000;
+      if(syncPending&&order&&retryOldEnough){
+        try{
+          syncRecovered=await tryProvision(order);
+          if(syncRecovered)syncPending=false;
+        }catch(error){
+          console.warn("subscription_sync_recovery_failed",{requestId,organizationId,message:clean(error?.message||error,240)});
+        }
+      }
+
       let provider=null;
       let providerUnavailable=false;
       try{
@@ -204,7 +218,9 @@ export default async function(req,res){
         provider:provider?safeProviderView(provider):null,
         providerUnavailable,
         managementReady:Boolean(order?.provider_subscription_id)&&!providerUnavailable,
-        checkoutUrl:clean(order?.checkout_url,1000)
+        checkoutUrl:clean(order?.checkout_url,1000),
+        syncPending,
+        syncRecovered
       });
     }
 
