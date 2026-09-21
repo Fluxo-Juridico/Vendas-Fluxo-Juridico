@@ -15,6 +15,7 @@ const requiredFiles = [
   "platform/runtime/index.js",
   "contracts/billing-v1.js",
   "server/lib/http.js",
+  "tests/http-contract.test.mjs",
   "server/lib/billing.js",
   "scripts/generate-api-wrappers.mjs",
   "scripts/predeploy-check.mjs",
@@ -105,6 +106,15 @@ for (const file of activeFiles) {
   if (checked.status !== 0) {
     errors.push(`Falha de sintaxe em ${file}: ${String(checked.stderr||checked.stdout||"").trim().slice(0,500)}`);
   }
+}
+
+const httpSource = await fs.readFile("server/lib/http.js", "utf8").catch(() => "");
+for (const token of ["prepareHttp","wrapHandler","X-Request-Id","api_unhandled_error","internal_error"]) {
+  if (!httpSource.includes(token)) errors.push(`Borda HTTP canônica incompleta: falta ${token}`);
+}
+const wrapperSource = await fs.readFile("scripts/generate-api-wrappers.mjs", "utf8").catch(() => "");
+for (const token of ["wrapHandler","httpModule","guarded API wrapper"]) {
+  if (!wrapperSource.includes(token)) errors.push(`Gerador de wrappers sem proteção HTTP: falta ${token}`);
 }
 
 const expectedPlans = {
