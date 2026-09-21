@@ -1,13 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {allowMethods,apiError,ensureRequestId} from "../server/lib/http.js";
+import {allowMethods,apiError,ensureRequestId,wrapHandler} from "../server/lib/http.js";
 
 function response(){
   return {
     headers:{},
     statusCode:200,
     body:null,
+    headersSent:false,
     setHeader(name,value){this.headers[name]=value;},
+    getHeader(name){return this.headers[name];},
     status(code){this.statusCode=code;return this;},
     json(body){this.body=body;return this;}
   };
@@ -46,4 +48,35 @@ test("allowMethods returns canonical 405 error",()=>{
   assert.equal(res.body.code,"method_not_allowed");
   assert.equal(res.body.requestId,req.requestId);
   assert.equal(res.headers.Allow,"GET");
+});
+
+test("wrapHandler normalizes route errors that omit code and requestId",async()=>{
+  const handler=wrapHandler(async(_req,res)=>{
+    return res.status(400).json({error:"Entrada inválida."});
+  },{service:"test"});
+  const req={method:"POST",url:"/api/test",headers:{}};
+  const res=response();
+  await handler(req,res);
+  assert.equal(res.statusCode,400);
+  assert.equal(res.body.code,"validation_error");
+  assert.equal(res.body.requestId,req.requestId);
+  assert.equal(res.headers["Cache-Control"],"no-store");
+});
+
+test("wrapHandler converts unhandled exceptions into a safe canonical 500",async()=>{
+  const previous=console.error;
+  console.error=()=>{};
+  try{
+    const handler=wrapHandler(async()=>{throw new Error("internal detail");},{service:"test"});
+    const req={method:"GET",url:"/api/test",headers:{}};
+    const res=response();
+    await handler(req,res);
+    assert.equal(res.statusCode,500);
+    assert.equal(res.body.code,"internal_error");
+    assert.equal(res.body.error,"Não foi possível concluir a operação.");
+    assert.equal(res.body.requestId,req.requestId);
+    assert.equal(JSON.stringify(res.body).includes("internal detail"),false);
+  }finally{
+    console.error=previous;
+  }
 });
