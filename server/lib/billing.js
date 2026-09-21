@@ -95,54 +95,23 @@ export async function settings(){
   const values=await Promise.all([
     config.get("checkout_enabled"),
     config.get("auto_activate_on_approved"),
-
-    config.get("plan_solo_price"),
-    config.get("plan_essencial_price"),
-    config.get("plan_profissional_price"),
-    config.get("plan_premium_price"),
-
-    config.get("plan_solo_seats"),
-    config.get("plan_essencial_seats"),
-    config.get("plan_profissional_seats"),
-    config.get("plan_premium_seats"),
-
-    config.get("plan_solo_storage_gb"),
-    config.get("plan_essencial_storage_gb"),
-    config.get("plan_profissional_storage_gb"),
-    config.get("plan_premium_storage_gb"),
-
     config.get("saas_base_url"),
     config.get("MERCADO_PAGO_ACCESS_TOKEN"),
     config.get("MERCADO_PAGO_WEBHOOK_SECRET"),
     config.get("BILLING_BRIDGE_SECRET")
   ]);
 
-  const billingReady=Boolean(values[14])&&Boolean(values[15])&&Boolean(values[16])&&Boolean(values[17]);
+  const billingReady=Boolean(values[2])&&Boolean(values[3])&&Boolean(values[4])&&Boolean(values[5]);
+  const fromCatalog=key=>Object.fromEntries(Object.entries(PLAN_DEFAULTS).map(([name,plan])=>[name,plan[key]]));
 
   return {
-    // Explicit switch wins, but a fully configured billing stack is considered ready.
+    // billing-v1 is immutable: prices and entitlements come from the signed catalog.
     enabled:Boolean(values[0])||billingReady,
     autoActivate:values[1]!==false,
-    saasBaseUrl:String(values[14]||"").replace(/\/$/,""),
-
-    prices:{
-      Solo:Number(values[2])||PLAN_DEFAULTS.Solo.price,
-      Essencial:Number(values[3])||PLAN_DEFAULTS.Essencial.price,
-      Profissional:Number(values[4])||PLAN_DEFAULTS.Profissional.price,
-      Premium:Number(values[5])||PLAN_DEFAULTS.Premium.price
-    },
-    seats:{
-      Solo:Number(values[6])||PLAN_DEFAULTS.Solo.seats,
-      Essencial:Number(values[7])||PLAN_DEFAULTS.Essencial.seats,
-      Profissional:Number(values[8])||PLAN_DEFAULTS.Profissional.seats,
-      Premium:Number(values[9])||PLAN_DEFAULTS.Premium.seats
-    },
-    storageGb:{
-      Solo:Number(values[10])||PLAN_DEFAULTS.Solo.storageGb,
-      Essencial:Number(values[11])||PLAN_DEFAULTS.Essencial.storageGb,
-      Profissional:Number(values[12])||PLAN_DEFAULTS.Profissional.storageGb,
-      Premium:Number(values[13])||PLAN_DEFAULTS.Premium.storageGb
-    }
+    saasBaseUrl:String(values[2]||"").replace(/\/$/,""),
+    prices:fromCatalog("price"),
+    seats:fromCatalog("seats"),
+    storageGb:fromCatalog("storageGb")
   };
 }
 

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
@@ -26,4 +27,13 @@ test("automação de pagamento é conservadora",()=>{
   assert.equal(automationForPaymentStatus("in_mediation"),"review");
   assert.equal(automationForPaymentStatus("pending"),"none");
   assert.equal(automationForPaymentStatus("rejected"),"none");
+});
+
+
+test("configuração de produção não altera o contrato billing-v1",()=>{
+  const source=fs.readFileSync(new URL("../server/lib/billing.js",import.meta.url),"utf8");
+  assert.equal(source.includes('config.get("plan_'),false);
+  assert.match(source,/prices:fromCatalog\("price"\)/);
+  assert.match(source,/seats:fromCatalog\("seats"\)/);
+  assert.match(source,/storageGb:fromCatalog\("storageGb"\)/);
 });
