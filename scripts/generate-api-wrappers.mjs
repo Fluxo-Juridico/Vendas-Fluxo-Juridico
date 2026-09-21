@@ -4,7 +4,8 @@ import path from "node:path";
 const serverRoot = path.resolve("server/api");
 const targetRoot = path.resolve("api");
 const publicRoot = path.resolve("public");
-const publicFiles = ["index.html", "site.css", "motion.css", "site.js"];
+const httpModule = path.resolve("server/lib/http.js");
+const publicFiles = ["index.html","site.css","motion.css","site.js"];
 
 async function walk(dir) {
   const out = [];
@@ -33,12 +34,14 @@ for (const source of files) {
   await fs.mkdir(path.dirname(target), { recursive: true });
 
   const importPath = "./" + path.relative(path.dirname(target), source).replaceAll(path.sep, "/");
+  const httpImportPath = "./" + path.relative(path.dirname(target), httpModule).replaceAll(path.sep, "/");
   const wrapper =
-    `export * from ${JSON.stringify(importPath)};\n` +
     `import handler from ${JSON.stringify(importPath)};\n` +
-    "export default handler;\n";
+    `import {wrapHandler} from ${JSON.stringify(httpImportPath)};\n` +
+    `export * from ${JSON.stringify(importPath)};\n` +
+    `export default wrapHandler(handler,{service:"fluxo-juridico-vendas"});\n`;
 
   await fs.writeFile(target, wrapper);
 }
 
-console.log(`Generated ${files.length} API wrapper(s) and ${publicFiles.length} public asset(s).`);
+console.log(`Generated ${files.length} guarded API wrapper(s) and ${publicFiles.length} public asset(s).`);
