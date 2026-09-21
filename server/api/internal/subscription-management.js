@@ -107,8 +107,8 @@ async function syncMain({order,account,action,plan,provider,requestId}){
   const cfg=await settings();
   if(!cfg.saasBaseUrl)throw Object.assign(new Error("Destino do SaaS não configurado."),{code:"saas_base_url_missing"});
   const catalog=PLAN_CATALOG[plan]||null;
-  const seats=catalog?.seats??Number(account.seat_limit)||0;
-  const storageGb=catalog?.storageGb??Math.round((Number(account.storage_limit_bytes)||0)/GB);
+  const seats=catalog?.seats ?? (Number(account.seat_limit)||0);
+  const storageGb=catalog?.storageGb ?? Math.round((Number(account.storage_limit_bytes)||0)/GB);
   const providerId=clean(order?.provider_subscription_id,160);
   const providerVersion=Number(provider?.version)||0;
   const eventId=[
