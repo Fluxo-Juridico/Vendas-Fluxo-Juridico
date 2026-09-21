@@ -1,4 +1,12 @@
 import {db,config} from "@fluxo-juridico/runtime";
+import {
+  BILLING_CONTRACT_VERSION,
+  BILLING_CONTRACT_FINGERPRINT,
+  PLAN_CATALOG,
+  PLAN_NAMES,
+  canonicalBillingSignature,
+  automationForPaymentStatus
+} from "../../contracts/billing-v1.js";
 
 /**
  * Billing domain shared by checkout, webhooks and provisioning.
@@ -6,16 +14,9 @@ import {db,config} from "@fluxo-juridico/runtime";
  * Keep plan defaults here. Runtime environment configuration may override prices,
  * seat limits and storage limits without changing application code.
  */
-export const BILLING_CONTRACT_VERSION="billing-v1";
-
-export const PLAN_DEFAULTS=Object.freeze({
-  Solo:Object.freeze({price:99,seats:2,storageGb:5}),
-  Essencial:Object.freeze({price:197,seats:3,storageGb:15}),
-  Profissional:Object.freeze({price:297,seats:10,storageGb:25}),
-  Premium:Object.freeze({price:497,seats:20,storageGb:100})
-});
-
-export const ALLOWED_PLANS=new Set(Object.keys(PLAN_DEFAULTS));
+export {BILLING_CONTRACT_VERSION,BILLING_CONTRACT_FINGERPRINT};
+export const PLAN_DEFAULTS=PLAN_CATALOG;
+export const ALLOWED_PLANS=PLAN_NAMES;
 
 /* --------------------------------------------------------------------------
    Input normalization and validation
@@ -59,12 +60,7 @@ export function normalizePaymentStatus(status){
   return normalized||"unknown";
 }
 
-export function automationFor(status){
-  if(status==="approved")return "activate";
-  if(["refunded","charged_back","cancelled"].includes(status))return "block";
-  if(status==="in_mediation")return "review";
-  return "none";
-}
+export const automationFor=automationForPaymentStatus;
 
 export function planForOrder(order){
   return String(order?.plan||"");
@@ -86,6 +82,7 @@ export function entitlementFor(order,limits={}){
   const storedStorageGb=Math.trunc(Number(order?.storage_limit_gb));
   return {
     contractVersion:clean(order?.billing_contract_version,60)||BILLING_CONTRACT_VERSION,
+    contractFingerprint:BILLING_CONTRACT_FINGERPRINT,
     seatLimit:storedSeats>0?storedSeats:seatsFor(plan,limits),
     storageLimitGb:storedStorageGb>0?storedStorageGb:storageGbFor(plan,limits)
   };
@@ -220,17 +217,18 @@ export async function signedBridgeRequest(url,payload){
   }
 
   const timestamp=String(Math.floor(Date.now()/1000));
-  const canonical=[
+  const canonical=canonicalBillingSignature({
     timestamp,
-    payload.eventId||"",
-    payload.orderId||"",
-    payload.action||"",
-    String(payload.email||"").toLowerCase(),
-    payload.contractVersion||"",
-    payload.plan||"",
-    payload.seats||"",
-    payload.storageGb||""
-  ].join(".");
+    eventId:payload.eventId,
+    orderId:payload.orderId,
+    action:payload.action,
+    email:payload.email,
+    contractVersion:payload.contractVersion,
+    contractFingerprint:payload.contractFingerprint,
+    plan:payload.plan,
+    seats:payload.seats,
+    storageGb:payload.storageGb
+  });
 
   const signature=await hmacHex(secret,canonical);
 
@@ -280,6 +278,7 @@ export async function tryProvision(order){
       firmName:order.firm_name,
       plan,
       contractVersion:entitlement.contractVersion,
+      contractFingerprint:entitlement.contractFingerprint,
       seats:entitlement.seatLimit,
       storageGb:entitlement.storageLimitGb,
       provider:"mercado_pago",
