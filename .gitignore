@@ -6,5 +6,6 @@ node_modules/
 .DS_Store
 *.log
 
-api/
 public/
+
+# Adaptadores de API versionados para descoberta das Functions no Vercel.
