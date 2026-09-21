@@ -10,7 +10,8 @@
   "scripts": {
     "build": "node scripts/generate-api-wrappers.mjs",
     "check": "node scripts/check-migration.mjs",
-    "predeploy": "node scripts/predeploy-check.mjs"
+    "predeploy": "node scripts/predeploy-check.mjs",
+    "test": "node --test tests"
   },
   "dependencies": {
     "@fluxo-juridico/runtime": "file:./platform/runtime",
