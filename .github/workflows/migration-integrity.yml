@@ -22,6 +22,10 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm install --ignore-scripts
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Run automated tests
+        run: npm test
       - name: Check migration integrity
         shell: bash
         run: |
