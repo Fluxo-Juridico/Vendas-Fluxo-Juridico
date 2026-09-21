@@ -48,14 +48,41 @@ export default async function(req,res){
   );
 
   let synchronized=0;
+  let errors=0;
 
   for(const order of rows){
-    if(await tryProvision(order))synchronized++;
+    try{
+      if(await tryProvision(order))synchronized++;
+    }catch(error){
+      errors++;
+      console.error("billing_retry_item_failed",{
+        orderId:String(order?.id||"").slice(0,120),
+        message:String(error?.message||error).slice(0,300)
+      });
+    }
   }
+
+  const remaining=Number((await db.query(
+    `SELECT count(*)::int AS total
+       FROM sales_orders
+       WHERE payment_status IN (
+         'approved','refunded','charged_back','cancelled','in_mediation'
+       )
+         AND provisioning_status IN ('not_ready','retry')`
+  )).rows[0]?.total)||0;
+
+  console.info("billing_retry_summary",{
+    checked:rows.length,
+    synchronized,
+    errors,
+    remaining
+  });
 
   res.setHeader("Cache-Control","no-store");
   res.json({
     checked:rows.length,
-    synchronized
+    synchronized,
+    errors,
+    remaining
   });
 }
