@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
+import {PLAN_DEFAULTS,BILLING_CONTRACT_VERSION} from "../server/lib/billing.js";
 
 const errors = [];
 const warnings = [];
@@ -102,6 +103,21 @@ for (const file of activeFiles) {
   const checked = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
   if (checked.status !== 0) {
     errors.push(`Falha de sintaxe em ${file}: ${String(checked.stderr||checked.stdout||"").trim().slice(0,500)}`);
+  }
+}
+
+const expectedPlans = {
+  Solo:{price:99,seats:2,storageGb:5},
+  Essencial:{price:197,seats:3,storageGb:15},
+  Profissional:{price:297,seats:10,storageGb:25},
+  Premium:{price:497,seats:20,storageGb:100}
+};
+if (BILLING_CONTRACT_VERSION!=="billing-v1") errors.push("Versão canônica de billing divergente no Vendas.");
+for (const [name,expected] of Object.entries(expectedPlans)) {
+  const actual=PLAN_DEFAULTS[name];
+  if (!actual) errors.push(`Plano ausente no Vendas: ${name}`);
+  else for (const key of ["price","seats","storageGb"]) {
+    if (Number(actual[key])!==expected[key]) errors.push(`Plano ${name} divergente no Vendas: ${key}`);
   }
 }
 
