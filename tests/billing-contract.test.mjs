@@ -9,6 +9,7 @@ import {
   automationForPaymentStatus,
   contractDescriptor
 } from "../contracts/billing-v1.js";
+import {validateProviderPayment} from "../server/lib/billing.js";
 
 test("vendas usa fingerprint íntegro do billing-v1",()=>{
   assert.equal(BILLING_CONTRACT_VERSION,"billing-v1");
@@ -36,4 +37,41 @@ test("configuração de produção não altera o contrato billing-v1",()=>{
   assert.match(source,/prices:fromCatalog\("price"\)/);
   assert.match(source,/seats:fromCatalog\("seats"\)/);
   assert.match(source,/storageGb:fromCatalog\("storageGb"\)/);
+});
+
+test("pagamento autorizado precisa corresponder integralmente ao pedido",()=>{
+  const order={
+    id:"order-1",
+    amount_cents:9900,
+    currency:"BRL",
+    provider_subscription_id:"subscription-1"
+  };
+  const payment={
+    id:"payment-1",
+    transaction_amount:99,
+    currency_id:"BRL",
+    external_reference:"order-1",
+    preapproval_id:"subscription-1"
+  };
+
+  assert.deepEqual(validateProviderPayment(order,payment),{
+    ok:true,
+    reason:"verified"
+  });
+  assert.equal(
+    validateProviderPayment(order,{...payment,transaction_amount:9.9}).reason,
+    "amount_mismatch"
+  );
+  assert.equal(
+    validateProviderPayment(order,{...payment,currency_id:"USD"}).reason,
+    "currency_mismatch"
+  );
+  assert.equal(
+    validateProviderPayment(order,{...payment,external_reference:"other"}).reason,
+    "external_reference_mismatch"
+  );
+  assert.equal(
+    validateProviderPayment(order,{...payment,preapproval_id:"other"}).reason,
+    "subscription_mismatch"
+  );
 });
