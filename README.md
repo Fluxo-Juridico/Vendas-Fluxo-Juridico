@@ -9,11 +9,11 @@ Site comercial e camada de aquisição/cobrança do Fluxo Jurídico.
 - `server/lib/`: domínio de billing, Mercado Pago e provisionamento.
 - `api/`: wrappers de deploy gerados automaticamente a partir de `server/api/`.
 - `platform/runtime/`: adaptador local de banco, configuração e HMAC.
-- `supabase/migrations/`: mudanças de schema versionadas e forward-only.
+- `supabase/README.md`: contrato de banco consumido pelo Vendas. Migrations são mantidas exclusivamente no SaaS principal.
 - `scripts/`: validações de integridade, build e pré-deploy.
 - `vercel.json`: headers, cron e política de deploy manual.
 
-Não há snapshots históricos ou cópias paralelas do código ativo no repositório.
+Não há snapshots históricos, migrations locais ou cópias paralelas do código ativo no repositório.
 
 ## Responsabilidades
 
@@ -81,3 +81,7 @@ Preços, usuários e armazenamento podem ser configurados pelas variáveis docum
 `Vendas → Mercado Pago → Vendas → SaaS principal`
 
 `Vendas → exportações HMAC → Administrativo`
+
+## Governança do banco
+
+O projeto de Vendas consome o mesmo Postgres/Supabase da plataforma, mas **não é dono do schema**. Toda mudança futura de tabela, índice, policy, função ou trigger deve ser criada e versionada em `Fluxo-Juridico/Fluxo-Juridico/supabase/migrations/`.

@@ -16,8 +16,7 @@ const requiredFiles = [
   "server/lib/billing.js",
   "scripts/generate-api-wrappers.mjs",
   "scripts/predeploy-check.mjs",
-  "supabase/migrations/20260919_sales_billing_schema.sql",
-  "supabase/migrations/20260919_sales_007_entitlement_snapshot.sql",
+  "supabase/README.md",
   "vercel.json"
 ];
 
@@ -28,6 +27,7 @@ for (const file of requiredFiles) {
 for (const legacyPath of ["archive", ".vercel-redeploy", "MIGRATION_STATUS.md"]) {
   if (await exists(legacyPath)) errors.push(`Artefato legado não pode permanecer no repositório ativo: ${legacyPath}`);
 }
+if (await exists("supabase/migrations")) errors.push("O Vendas não deve possuir migrations SQL; o SaaS principal é o único dono do schema.");
 
 if (await exists("lib")) {
   errors.push("Código backend ativo não deve permanecer em lib/; use server/lib.");
