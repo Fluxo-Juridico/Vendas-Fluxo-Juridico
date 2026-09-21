@@ -67,6 +67,33 @@ export default async function(req,res){
     });
   }
 
+  const recent=(await db.query(
+    `SELECT id,checkout_url,amount_cents,billing_contract_version,seat_limit,storage_limit_gb
+       FROM sales_orders
+      WHERE lower(buyer_email)=lower($1)
+        AND plan=$2
+        AND payment_status='pending'
+        AND checkout_url<>''
+        AND created_at>=now()-interval '15 minutes'
+      ORDER BY created_at DESC
+      LIMIT 1`,
+    [email,plan]
+  )).rows[0];
+
+  if(recent?.checkout_url){
+    return res.json({
+      ok:true,
+      reused:true,
+      orderId:recent.id,
+      checkoutUrl:recent.checkout_url,
+      plan,
+      amountCents:Number(recent.amount_cents)||Math.round(amount*100),
+      contractVersion:recent.billing_contract_version||BILLING_CONTRACT_VERSION,
+      seatLimit:Number(recent.seat_limit)||seatLimit,
+      storageLimitGb:Number(recent.storage_limit_gb)||storageLimitGb
+    });
+  }
+
   const orderId=crypto.randomUUID();
   const amountCents=Math.round(amount*100);
   const billingCycle="monthly";
