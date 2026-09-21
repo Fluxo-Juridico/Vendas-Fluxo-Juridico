@@ -110,7 +110,7 @@ const checkoutSource = await fs.readFile("server/api/checkout.js", "utf8").catch
 const exportSource = await fs.readFile("server/api/internal/billing-export.js", "utf8").catch(() => "");
 for (const [label,source,tokens] of [
   ["billing",billingSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]],
-  ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","seat_limit","storage_limit_gb"]],
+  ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","seat_limit","storage_limit_gb","reused:true","15 minutes"]],
   ["billing-export",exportSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]]
 ]) {
   for (const token of tokens) {
