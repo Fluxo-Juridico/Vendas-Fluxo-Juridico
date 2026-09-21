@@ -45,6 +45,46 @@ export function maskCPF(value){
   return cpf.length===11?"***."+cpf.slice(3,6)+"."+cpf.slice(6,9)+"-**":"";
 }
 
+/**
+ * Confirms that an authoritative Mercado Pago payment belongs to the order
+ * that is about to be provisioned. This is deliberately strict: a signed
+ * webhook proves who sent the notification, not that its payment amount and
+ * commercial reference match our order.
+ */
+export function validateProviderPayment(order,payment){
+  const expectedAmountCents=Math.round(Number(order?.amount_cents));
+  const transactionAmount=Number(payment?.transaction_amount);
+  const actualAmountCents=Number.isFinite(transactionAmount)
+    ?Math.round(transactionAmount*100)
+    :Number.NaN;
+  const expectedCurrency=clean(order?.currency||"BRL",10).toUpperCase();
+  const actualCurrency=clean(payment?.currency_id,10).toUpperCase();
+  const externalReference=clean(payment?.external_reference,120);
+  const paymentSubscriptionId=clean(
+    payment?.preapproval_id||payment?.subscription_id,
+    120
+  );
+  const orderSubscriptionId=clean(order?.provider_subscription_id,120);
+
+  if(!Number.isInteger(expectedAmountCents)||expectedAmountCents<1){
+    return {ok:false,reason:"invalid_order_amount"};
+  }
+  if(!Number.isInteger(actualAmountCents)||actualAmountCents!==expectedAmountCents){
+    return {ok:false,reason:"amount_mismatch"};
+  }
+  if(!actualCurrency||actualCurrency!==expectedCurrency){
+    return {ok:false,reason:"currency_mismatch"};
+  }
+  if(externalReference&&externalReference!==String(order?.id||"")){
+    return {ok:false,reason:"external_reference_mismatch"};
+  }
+  if(orderSubscriptionId&&paymentSubscriptionId&&paymentSubscriptionId!==orderSubscriptionId){
+    return {ok:false,reason:"subscription_mismatch"};
+  }
+
+  return {ok:true,reason:"verified"};
+}
+
 /* --------------------------------------------------------------------------
    Payment/provisioning state mapping
    -------------------------------------------------------------------------- */
@@ -118,20 +158,26 @@ export async function settings(){
 /* --------------------------------------------------------------------------
    Mercado Pago client
    -------------------------------------------------------------------------- */
-export async function mpFetch(path,{method="GET",body}={}){
-  const token=await config.get("MERCADO_PAGO_ACCESS_TOKEN");
+export async function mpFetch(path,{method="GET",body,idempotencyKey=""}={}){
+  const token=String(
+    await config.get("MERCADO_PAGO_ACCESS_TOKEN")||""
+  ).trim();
   if(!token){
     throw Object.assign(new Error("Mercado Pago ainda não configurado."),{
       code:"billing_setup_required"
     });
   }
 
+  const headers={
+    Authorization:"Bearer "+token,
+    "Content-Type":"application/json"
+  };
+  const safeIdempotencyKey=clean(idempotencyKey,120);
+  if(safeIdempotencyKey)headers["X-Idempotency-Key"]=safeIdempotencyKey;
+
   const response=await fetch("https://api.mercadopago.com"+path,{
     method,
-    headers:{
-      Authorization:"Bearer "+token,
-      "Content-Type":"application/json"
-    },
+    headers,
     body:body?JSON.stringify(body):undefined,
     signal:AbortSignal.timeout(15000)
   });
@@ -178,7 +224,9 @@ async function hmacHex(secret,message){
 }
 
 export async function signedBridgeRequest(url,payload){
-  const secret=await config.get("BILLING_BRIDGE_SECRET");
+  const secret=String(
+    await config.get("BILLING_BRIDGE_SECRET")||""
+  ).trim();
   if(!secret){
     throw Object.assign(new Error("Ponte de cobrança ainda não configurada."),{
       code:"bridge_setup_required"
