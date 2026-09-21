@@ -151,6 +151,7 @@ export default async function(req,res){
 
     const checkoutPlan=await mpFetch("/preapproval_plan",{
       method:"POST",
+      idempotencyKey:orderId,
       body:{
         reason:"Escritório Digital — Plano "+plan,
         auto_recurring:{
