@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import {normalizePaymentStatus} from "../server/lib/billing.js";
 import {
   isSignedSimulatorProbe,
   normalizedTimestamp,
@@ -57,4 +58,10 @@ test("não tratar uma notificação real parecida como teste",()=>{
     }),
     false
   );
+});
+
+
+test("normalizar cancelamento do Mercado Pago para o domínio interno",()=>{
+  assert.equal(normalizePaymentStatus("canceled"),"cancelled");
+  assert.equal(normalizePaymentStatus("cancelled"),"cancelled");
 });
