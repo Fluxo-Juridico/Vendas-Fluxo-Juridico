@@ -9,6 +9,7 @@ import {
   validCPF,
   maskCPF,
   BILLING_CONTRACT_VERSION,
+  BILLING_CONTRACT_FINGERPRINT,
   seatsFor,
   storageGbFor,
   settings,
@@ -89,6 +90,7 @@ export default async function(req,res){
       plan,
       amountCents:Number(recent.amount_cents)||Math.round(amount*100),
       contractVersion:recent.billing_contract_version||BILLING_CONTRACT_VERSION,
+      contractFingerprint:BILLING_CONTRACT_FINGERPRINT,
       seatLimit:Number(recent.seat_limit)||seatLimit,
       storageLimitGb:Number(recent.storage_limit_gb)||storageLimitGb
     });
@@ -192,6 +194,7 @@ export default async function(req,res){
       plan,
       amountCents,
       contractVersion:BILLING_CONTRACT_VERSION,
+      contractFingerprint:BILLING_CONTRACT_FINGERPRINT,
       seatLimit,
       storageLimitGb
     });
