@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
-import {PLAN_DEFAULTS,BILLING_CONTRACT_VERSION} from "../server/lib/billing.js";
+import {createHash} from "node:crypto";
+import {PLAN_CATALOG as PLAN_DEFAULTS,BILLING_CONTRACT_VERSION,BILLING_CONTRACT_FINGERPRINT,contractDescriptor} from "../contracts/billing-v1.js";
 
 const errors = [];
 const warnings = [];
@@ -12,6 +13,7 @@ const requiredFiles = [
   ".env.example",
   "platform/runtime/package.json",
   "platform/runtime/index.js",
+  "contracts/billing-v1.js",
   "server/lib/http.js",
   "server/lib/billing.js",
   "scripts/generate-api-wrappers.mjs",
@@ -112,6 +114,7 @@ const expectedPlans = {
   Premium:{price:497,seats:20,storageGb:100}
 };
 if (BILLING_CONTRACT_VERSION!=="billing-v1") errors.push("Versão canônica de billing divergente no Vendas.");
+if (createHash("sha256").update(contractDescriptor()).digest("hex")!==BILLING_CONTRACT_FINGERPRINT) errors.push("Fingerprint billing-v1 divergente no Vendas.");
 for (const [name,expected] of Object.entries(expectedPlans)) {
   const actual=PLAN_DEFAULTS[name];
   if (!actual) errors.push(`Plano ausente no Vendas: ${name}`);
@@ -124,9 +127,9 @@ const billingSource = await fs.readFile("server/lib/billing.js", "utf8").catch((
 const checkoutSource = await fs.readFile("server/api/checkout.js", "utf8").catch(() => "");
 const exportSource = await fs.readFile("server/api/internal/billing-export.js", "utf8").catch(() => "");
 for (const [label,source,tokens] of [
-  ["billing",billingSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]],
-  ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","seat_limit","storage_limit_gb","reused:true","15 minutes"]],
-  ["billing-export",exportSource,["billing-v1","seat_limit","storage_limit_gb","contractVersion"]]
+  ["billing",billingSource,["BILLING_CONTRACT_FINGERPRINT","seat_limit","storage_limit_gb","contractVersion","canonicalBillingSignature"]],
+  ["checkout",checkoutSource,["BILLING_CONTRACT_VERSION","BILLING_CONTRACT_FINGERPRINT","seat_limit","storage_limit_gb","reused:true","15 minutes"]],
+  ["billing-export",exportSource,["BILLING_CONTRACT_VERSION","BILLING_CONTRACT_FINGERPRINT","seat_limit","storage_limit_gb","contractVersion"]]
 ]) {
   for (const token of tokens) {
     if (!source.includes(token)) errors.push(`Contrato de billing incompleto em ${label}: falta ${token}`);
