@@ -1,5 +1,5 @@
 /**
- * Escritório Digital — landing page behavior
+ * Fluxo Jurídico — landing page behavior
  *
  * Responsibilities:
  * - navigation and reveal interactions;
@@ -117,7 +117,7 @@ const tourData={
 function renderTour(key='case'){
   const data=tourData[key],stage=$('#tourStage');
   if(!data||!stage)return;
-  stage.innerHTML='<div class="tour-card"><div class="tour-copy"><small>'+data.kicker+'</small><h3>'+data.title+'</h3><p>'+data.text+'</p><ul>'+data.items.map(x=>'<li>'+x+'</li>').join('')+'</ul></div><div class="tour-ui"><div class="mini-top"><span>ESCRITÓRIO DIGITAL</span><b>Fluxo conectado</b></div>'+data.ui.map((x,i)=>'<div class="mini-card"><strong>'+x[0]+'</strong><span>'+x[1]+'</span><small class="mini-badge '+(i===1?'amber':'')+'">'+x[2]+'</small></div>').join('')+'</div></div>';
+  stage.innerHTML='<div class="tour-card"><div class="tour-copy"><small>'+data.kicker+'</small><h3>'+data.title+'</h3><p>'+data.text+'</p><ul>'+data.items.map(x=>'<li>'+x+'</li>').join('')+'</ul></div><div class="tour-ui"><div class="mini-top"><span>FLUXO JURÍDICO</span><b>Fluxo conectado</b></div>'+data.ui.map((x,i)=>'<div class="mini-card"><strong>'+x[0]+'</strong><span>'+x[1]+'</span><small class="mini-badge '+(i===1?'amber':'')+'">'+x[2]+'</small></div>').join('')+'</div></div>';
   $$('[data-tour]').forEach(b=>b.classList.toggle('active',b.dataset.tour===key));
 }
 document.addEventListener('click',e=>{
