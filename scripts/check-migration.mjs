@@ -33,6 +33,11 @@ if (await exists("lib")) {
   errors.push("Código backend ativo não deve permanecer em lib/; use server/lib.");
 }
 
+const gitignoreSource = await fs.readFile(".gitignore","utf8").catch(()=> "");
+for (const generatedPath of ["api/","public/"]) {
+  if (!gitignoreSource.split(/\r?\n/).includes(generatedPath)) errors.push(`api/ e public/ devem permanecer ignorados: falta ${generatedPath} no .gitignore`);
+}
+
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
 const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
 if (runtimeDep !== "file:./platform/runtime") {
@@ -66,19 +71,9 @@ async function walk(root) {
 }
 
 const serverApiFiles = (await walk("server/api")).filter(file => /\.js$/i.test(file));
-const wrapperFiles = (await walk("api")).filter(file => /\.js$/i.test(file));
 if (!serverApiFiles.length) errors.push("Nenhuma rota fonte encontrada em server/api.");
-if (serverApiFiles.length !== wrapperFiles.length) {
-  errors.push(`Quantidade de wrappers em api/ (${wrapperFiles.length}) difere das rotas fonte em server/api (${serverApiFiles.length}).`);
-}
-
-for (const file of wrapperFiles) {
-  const content = await fs.readFile(file, "utf8").catch(() => "");
-  if (!content.includes("server/api/")) errors.push(`Wrapper fora do padrão server/api: ${file}`);
-}
 
 const activeFiles = [
-  ...await walk("api"),
   ...await walk("server"),
   ...await walk("platform"),
   ...await walk("scripts")
