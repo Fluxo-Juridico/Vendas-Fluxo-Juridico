@@ -3,6 +3,7 @@ import {db,config,webhooks} from "@fluxo-juridico/runtime";
 import {
   mpFetch,
   normalizePaymentStatus,
+  validateProviderPayment,
   tryProvision
 } from "../../lib/billing.js";
 
@@ -134,10 +135,22 @@ async function recordEvent(data){
     );
   }catch(error){
     // Mercado Pago may redeliver the same event. The unique index makes this idempotent.
-    if(!String(error?.message||"").includes("sales_payment_events_provider_unique")){
+    if(
+      String(error?.code||"")!=="23505"&&
+      !String(error?.message||"").includes("sales_payment_events_provider_unique")
+    ){
       throw error;
     }
   }
+}
+
+function paymentRejection(order,payment,validation,eventType){
+  console.error("mercado_pago_payment_not_applied",{
+    orderId:String(order?.id||""),
+    paymentId:String(payment?.id||""),
+    eventType,
+    reason:validation.reason
+  });
 }
 
 /* ------------------------- Payment state mutation ----------------------- */
@@ -302,7 +315,11 @@ export default async function(req,res){
         payload:payment
       });
 
-      if(order)await applyPayment(order,payment);
+      if(order){
+        const validation=validateProviderPayment(order,payment);
+        if(validation.ok)await applyPayment(order,payment);
+        else paymentRejection(order,payment,validation,eventType);
+      }
     }
 
     /* Subscription created/updated from a preapproval plan checkout. */
@@ -367,11 +384,23 @@ export default async function(req,res){
         "/authorized_payments/"+encodeURIComponent(resourceId)
       );
 
-      const order=
-        (await orderByReference(invoice.external_reference))||
-        (await orderBySubscriptionId(invoice.preapproval_id));
+      const summarizedPayment=invoice.payment||{};
+      const authorizedPaymentId=String(
+        summarizedPayment.id||invoice.payment_id||""
+      );
+      const payment=authorizedPaymentId
+        ?await mpFetch(
+          "/v1/payments/"+encodeURIComponent(authorizedPaymentId)
+        )
+        :summarizedPayment;
 
-      const payment=invoice.payment||{};
+      const order=
+        (await orderByReference(
+          payment.external_reference||invoice.external_reference
+        ))||
+        (await orderBySubscriptionId(
+          payment.preapproval_id||invoice.preapproval_id
+        ));
 
       await recordEvent({
         providerEventId,
@@ -381,17 +410,19 @@ export default async function(req,res){
         status:payment.status||invoice.summarized||invoice.status,
         statusDetail:
           payment.status_detail||invoice.summarized||invoice.status,
-        payload:invoice
+        payload:{invoice,payment}
       });
 
       if(order&&payment.status){
-        await applyPayment(order,{
+        const authoritativePayment={
+          ...payment,
           id:payment.id||"",
-          status:payment.status,
-          status_detail:payment.status_detail||"",
           preapproval_id:
             invoice.preapproval_id||order.provider_subscription_id
-        });
+        };
+        const validation=validateProviderPayment(order,authoritativePayment);
+        if(validation.ok)await applyPayment(order,authoritativePayment);
+        else paymentRejection(order,authoritativePayment,validation,eventType);
       }
     }
 
