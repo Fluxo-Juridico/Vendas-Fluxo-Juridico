@@ -284,7 +284,10 @@ checkoutForm?.addEventListener('submit',async e=>{
 function resultMessage(data){
   const status=data.status,provision=data.provisioningStatus;
   if(status==='approved'){
-    return {cls:'approved',html:'<strong>Pagamento aprovado.</strong> '+(provision==='activated'?'Seu e-mail já foi autorizado no Escritório Digital. Você pode entrar no sistema.':'A confirmação foi recebida e a liberação do acesso está sendo processada.')};
+    if(provision==='activated'){
+      return {cls:'approved',html:'<strong>Pagamento aprovado e acesso liberado.</strong> As instruções do primeiro acesso foram enviadas para o e-mail usado na contratação. Se esse e-mail já possuía uma conta, você pode entrar normalmente. <small>Não encontrou a mensagem? Na tela de acesso, use “Esqueci minha senha”.</small>'};
+    }
+    return {cls:'pending',html:'<strong>Pagamento aprovado.</strong> A criação segura do seu acesso está sendo concluída automaticamente. Você não precisa enviar comprovante nem solicitar liberação manual.'};
   }
   if(status==='pending'||status==='created'){
     return {cls:'pending',html:'<strong>Pagamento pendente.</strong> Aguardando a confirmação do Mercado Pago. Você não precisa enviar comprovante.'};
@@ -307,7 +310,11 @@ async function showPaymentReturn(orderId){
       const msg=resultMessage(data);
       checkoutResult.className='checkout-result '+msg.cls;
       const saasHref=safeSaasHref();
-      checkoutResult.innerHTML=msg.html+(data.status==='approved'&&data.provisioningStatus==='activated'&&saasHref?'<div class="result-actions"><a href="'+saasHref+'">Entrar no sistema →</a></div>':'');
+      let loginHref='';
+      if(saasHref){
+        try{loginHref=new URL('/login?first=1',saasHref).href}catch{}
+      }
+      checkoutResult.innerHTML=msg.html+(data.status==='approved'&&data.provisioningStatus==='activated'&&loginHref?'<div class="result-actions"><a href="'+loginHref+'">Fazer primeiro acesso →</a></div>':'');
       if(!['pending','created'].includes(data.status))break;
     }catch(error){
       checkoutResult.className='checkout-result problem';
