@@ -1,5 +1,6 @@
 import {allowMethods} from "../../lib/http.js";
 import {db,config,webhooks} from "@fluxo-juridico/runtime";
+import {BILLING_CONTRACT_VERSION,BILLING_CONTRACT_FINGERPRINT} from "../../../contracts/billing-v1.js";
 
 export const access="public";
 export const methods=["GET"];
@@ -54,11 +55,14 @@ export default async function(req,res){
 
   res.setHeader("Cache-Control","private, no-store");
   res.json({
+    contractVersion:BILLING_CONTRACT_VERSION,
+    contractFingerprint:BILLING_CONTRACT_FINGERPRINT,
     items:rows.map(order=>({
       id:order.id,
       leadId:order.lead_id,
       plan:order.plan,
-      contractVersion:order.billing_contract_version||"billing-v1",
+      contractVersion:order.billing_contract_version||BILLING_CONTRACT_VERSION,
+      contractFingerprint:BILLING_CONTRACT_FINGERPRINT,
       seatLimit:Number(order.seat_limit)||0,
       storageLimitGb:Number(order.storage_limit_gb)||0,
       billingCycle:order.billing_cycle,
