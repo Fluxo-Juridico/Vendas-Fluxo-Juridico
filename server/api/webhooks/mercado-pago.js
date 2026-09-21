@@ -24,7 +24,7 @@ export const methods=["POST"];
  */
 
 /* --------------------------- Signature helpers -------------------------- */
-function signatureParts(value){
+export function signatureParts(value){
   const parts={};
 
   for(const item of String(value||"").split(",")){
@@ -36,6 +36,28 @@ function signatureParts(value){
   }
 
   return parts;
+}
+
+export function signatureManifest({dataId,requestId,timestamp}){
+  return (
+    "id:"+String(dataId||"").toLowerCase()+
+    ";request-id:"+String(requestId||"")+
+    ";ts:"+String(timestamp||"")+
+    ";"
+  );
+}
+
+export function normalizedTimestamp(value){
+  const raw=Number(value);
+  if(!Number.isFinite(raw))return undefined;
+  return raw>1e11?Math.floor(raw/1000):Math.floor(raw);
+}
+
+function authRejection(reason,details={}){
+  console.warn("mercado_pago_webhook_auth_rejected",{
+    reason,
+    ...details
+  });
 }
 
 /* ----------------------------- Order lookup ----------------------------- */
@@ -159,7 +181,11 @@ async function applyPayment(order,payment){
 /* ------------------------------- Handler -------------------------------- */
 export default async function(req,res){
   if(!allowMethods(req,res,methods))return;
-  const secret=await config.get("MERCADO_PAGO_WEBHOOK_SECRET");
+  // Trimming protects against an accidental trailing newline when the secret
+  // is copied from Mercado Pago into the deployment environment.
+  const secret=String(
+    await config.get("MERCADO_PAGO_WEBHOOK_SECRET")||""
+  ).trim();
   if(!secret){
     return res.status(503).json({error:"Webhook ainda não configurado."});
   }
@@ -174,31 +200,49 @@ export default async function(req,res){
   ).toLowerCase();
 
   if(!parts.ts||!parts.v1||!requestId||!dataId){
+    authRejection("missing_signature_fields",{
+      hasTimestamp:Boolean(parts.ts),
+      hasSignature:Boolean(parts.v1),
+      hasRequestId:Boolean(requestId),
+      hasDataId:Boolean(dataId)
+    });
     return res.status(401).json({error:"Assinatura ausente."});
   }
 
-  const manifest=
-    "id:"+dataId+
-    ";request-id:"+requestId+
-    ";ts:"+parts.ts+
-    ";";
+  const manifest=signatureManifest({
+    dataId,
+    requestId,
+    timestamp:parts.ts
+  });
+  const timestamp=normalizedTimestamp(parts.ts);
 
-  const rawTimestamp=Number(parts.ts);
-  const timestamp=Number.isFinite(rawTimestamp)
-    ?(rawTimestamp>1e11?Math.floor(rawTimestamp/1000):Math.floor(rawTimestamp))
-    :undefined;
+  if(timestamp===undefined){
+    authRejection("invalid_timestamp");
+    return res.status(401).json({error:"Assinatura inválida."});
+  }
 
-  const signatureValid=await webhooks.verifyHmac({
+  // Validate the digest and freshness separately so production logs can
+  // distinguish a wrong secret from an expired/replayed notification without
+  // ever recording the secret, signature or request identifier.
+  const signatureMatches=await webhooks.verifyHmac({
     raw:manifest,
     signature:parts.v1,
     secret,
     algorithm:"sha256",
-    encoding:"hex",
-    timestamp,
-    tolerance:600
+    encoding:"hex"
   });
 
-  if(!signatureValid){
+  if(!signatureMatches){
+    authRejection("signature_mismatch");
+    return res.status(401).json({error:"Assinatura inválida."});
+  }
+
+  const timestampAgeSeconds=Math.abs(
+    Math.floor(Date.now()/1000)-timestamp
+  );
+
+  if(timestampAgeSeconds>600){
+    authRejection("expired_timestamp",{timestampAgeSeconds});
     return res.status(401).json({error:"Assinatura inválida."});
   }
 
