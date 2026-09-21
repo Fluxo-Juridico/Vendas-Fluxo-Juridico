@@ -36,10 +36,10 @@ if (await exists("lib")) {
   errors.push("Código backend ativo não deve permanecer em lib/; use server/lib.");
 }
 
-const gitignoreSource = await fs.readFile(".gitignore","utf8").catch(()=> "");
-for (const generatedPath of ["api/","public/"]) {
-  if (!gitignoreSource.split(/\r?\n/).includes(generatedPath)) errors.push(`api/ e public/ devem permanecer ignorados: falta ${generatedPath} no .gitignore`);
-}
+const gitignoreEntries = (await fs.readFile(".gitignore","utf8").catch(()=> "")).split(/\r?\n/);
+if (gitignoreEntries.includes("api/")) errors.push("api/ contém adaptadores versionados exigidos pela Vercel e não pode estar ignorado.");
+if (!gitignoreEntries.includes("public/")) errors.push("public/ continua sendo artefato de build e deve permanecer ignorado.");
+if (!await exists("api")) errors.push("Diretório de adaptadores versionados ausente: api/");
 
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
 const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
