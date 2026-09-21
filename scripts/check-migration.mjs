@@ -25,6 +25,10 @@ for (const file of requiredFiles) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
+for (const legacyPath of ["archive", ".vercel-redeploy", "MIGRATION_STATUS.md"]) {
+  if (await exists(legacyPath)) errors.push(`Artefato legado não pode permanecer no repositório ativo: ${legacyPath}`);
+}
+
 if (await exists("lib")) {
   errors.push("Código backend ativo não deve permanecer em lib/; use server/lib.");
 }

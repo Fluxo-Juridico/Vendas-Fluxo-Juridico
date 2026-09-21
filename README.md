@@ -1,18 +1,36 @@
-# Fluxo Jurídico — Página de Vendas
+# Fluxo Jurídico — Vendas
 
-Site comercial do Fluxo Jurídico. A implementação funcional de referência é a v30; a infraestrutura ativa está desacoplada do provedor anterior.
+Site comercial e camada de aquisição/cobrança do Fluxo Jurídico.
 
-## Arquitetura
+## Estrutura atual
 
-- `server/api/`: código-fonte das rotas de checkout, webhook, CRM e jobs.
-- `server/lib/`: regras compartilhadas de billing, Mercado Pago e integrações.
-- `api/`: wrappers finos de deploy gerados a partir de `server/api/`.
+- `index.html`, `site.js`, `site.css` e `motion.css`: interface comercial fonte.
+- `server/api/`: checkout, consulta de pagamento, webhook, CRM interno e jobs.
+- `server/lib/`: domínio de billing, Mercado Pago e provisionamento.
+- `api/`: wrappers de deploy gerados automaticamente a partir de `server/api/`.
 - `platform/runtime/`: adaptador local de banco, configuração e HMAC.
-- `archive/source-v30/`: snapshot somente para auditoria e comparação.
-- `supabase/migrations/`: schema e políticas versionadas.
-- arquivos de interface na raiz permanecem inalterados para preservar o comportamento atual.
+- `supabase/migrations/`: mudanças de schema versionadas e forward-only.
+- `scripts/`: validações de integridade, build e pré-deploy.
+- `vercel.json`: headers, cron e política de deploy manual.
 
-O código em `archive/` não participa do runtime.
+Não há snapshots históricos ou cópias paralelas do código ativo no repositório.
+
+## Responsabilidades
+
+O projeto de Vendas é responsável por:
+
+- apresentação comercial dos planos;
+- validação dos dados de contratação;
+- criação de lead e pedido;
+- criação/reutilização de checkout;
+- integração direta com Mercado Pago;
+- recebimento e validação de webhook;
+- normalização do estado de pagamento;
+- provisionamento assinado para o SaaS principal;
+- exportações internas assinadas para o Administrativo;
+- retry de provisionamento por job autenticado.
+
+A gestão de usuários e regras jurídicas não pertencem a este repositório.
 
 ## Planos
 
@@ -23,18 +41,21 @@ O código em `archive/` não participa do runtime.
 | Profissional | R$ 297 | 10 | 25 GB |
 | Premium | R$ 497 | 20 | 100 GB |
 
-## Fluxo preservado
+O catálogo canônico também é validado no CI para impedir divergência silenciosa com o Administrativo e o SaaS principal.
+
+## Fluxo
 
 1. O cliente escolhe o plano.
-2. Nome, e-mail, CPF, escritório e telefone são validados.
-3. O pedido e o lead são registrados no Postgres/Supabase.
-4. O checkout recorrente é aberto no Mercado Pago.
-5. O webhook confirma o estado real do pagamento.
-6. Pagamento aprovado dispara provisionamento assinado no SaaS.
-7. Reembolso, chargeback ou cancelamento podem bloquear o acesso.
-8. O Admin sincroniza cobranças e CRM por HMAC.
+2. Os dados comerciais são validados.
+3. Lead e pedido são gravados no Postgres/Supabase.
+4. Checkout pendente recente do mesmo e-mail/plano é reutilizado quando aplicável.
+5. O Mercado Pago processa a cobrança.
+6. O webhook valida assinatura e consulta o recurso autoritativo no provedor.
+7. O estado de pagamento é persistido.
+8. Eventos terminais provisionam ou bloqueiam o acesso no SaaS por ponte HMAC.
+9. Falhas transitórias entram em retry autenticado.
 
-Dados de cartão/CVV não passam pela aplicação.
+Dados de cartão e CVV não passam pela aplicação.
 
 ## Variáveis obrigatórias
 
@@ -47,10 +68,16 @@ Dados de cartão/CVV não passam pela aplicação.
 - `CHECKOUT_ENABLED`
 - `AUTO_ACTIVATE_ON_APPROVED`
 
-Preços, usuários e armazenamento também podem ser configurados pelas variáveis documentadas em `.env.example`.
+Preços, usuários e armazenamento podem ser configurados pelas variáveis documentadas em `.env.example`.
 
-## Validação local/CI
+## Validação
 
-- `npm run check`: valida arquitetura, sintaxe, segredos, contratos e nomenclatura.
-- `npm run build`: regenera os wrappers de `api/` sem alterar a lógica de negócio.
-- `npm run predeploy`: valida o contrato de configuração do ambiente.
+- `npm run check`: valida arquitetura, sintaxe, segredos, billing, catálogo de planos e ausência de legado.
+- `npm run build`: regenera os wrappers de `api/` e os arquivos públicos.
+- `npm run predeploy`: valida a configuração necessária para publicar.
+
+## Fluxo entre sistemas
+
+`Vendas → Mercado Pago → Vendas → SaaS principal`
+
+`Vendas → exportações HMAC → Administrativo`
