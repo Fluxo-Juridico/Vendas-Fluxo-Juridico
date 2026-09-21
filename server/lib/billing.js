@@ -106,7 +106,7 @@ export async function settings(){
 
   return {
     // billing-v1 is immutable: prices and entitlements come from the signed catalog.
-    enabled:Boolean(values[0])||billingReady,
+    enabled:Boolean(values[0])&&billingReady,
     autoActivate:values[1]!==false,
     saasBaseUrl:String(values[2]||"").replace(/\/$/,""),
     prices:fromCatalog("price"),
