@@ -53,6 +53,26 @@ export function normalizedTimestamp(value){
   return raw>1e11?Math.floor(raw/1000):Math.floor(raw);
 }
 
+/**
+ * Mercado Pago's webhook configuration screen sends this documented,
+ * synthetic notification when the user clicks "Enviar teste". The resource
+ * id does not exist in the provider API, so it must be acknowledged only
+ * after its HMAC signature and timestamp have already been validated.
+ */
+export function isSignedSimulatorProbe({body,dataId}){
+  return (
+    String(dataId||"")==="123456"&&
+    String(body?.id||"")==="123456"&&
+    String(body?.data?.id||"")==="123456"&&
+    String(body?.application_id||"")==="6890332303704097"&&
+    String(body?.action||"")==="updated"&&
+    String(body?.entity||"")==="preapproval"&&
+    String(body?.type||"")==="subscription_preapproval"&&
+    Number(body?.version)===8&&
+    String(body?.date||"")==="2021-11-01T02:02:02Z"
+  );
+}
+
 function authRejection(reason,details={}){
   console.warn("mercado_pago_webhook_auth_rejected",{
     reason,
@@ -244,6 +264,15 @@ export default async function(req,res){
   if(timestampAgeSeconds>600){
     authRejection("expired_timestamp",{timestampAgeSeconds});
     return res.status(401).json({error:"Assinatura inválida."});
+  }
+
+  // The simulator signs this request correctly but uses a deliberately
+  // nonexistent resource. Acknowledge it without calling Mercado Pago or
+  // touching the database. Real notifications continue through the normal
+  // authoritative-resource lookup below.
+  if(isSignedSimulatorProbe({body:req.body,dataId})){
+    console.info("mercado_pago_webhook_simulator_probe_acknowledged");
+    return res.json({received:true,simulated:true});
   }
 
   const eventType=String(req.body?.type||req.query?.type||"");
