@@ -78,10 +78,11 @@ async function billingContext({organizationId,email}){
     )).rows[0]||null;
   }
   if(!order){
-    order=(await db.query(
-      "SELECT * FROM sales_orders WHERE lower(buyer_email)=lower($1) ORDER BY (COALESCE(provider_subscription_id,'')<>'') DESC,paid_at DESC NULLS LAST,created_at DESC LIMIT 1",
-      [account.email]
-    )).rows[0]||null;
+    const fallback=(await db.query(
+      "SELECT * FROM sales_orders WHERE lower(buyer_email)=lower($1) AND ($2='' OR plan=$2) ORDER BY (COALESCE(provider_subscription_id,'')<>'') DESC,paid_at DESC NULLS LAST,created_at DESC LIMIT 2",
+      [account.email,clean(account.subscription_plan,60)]
+    )).rows;
+    order=fallback.length===1?fallback[0]:null;
   }
   return {account,order};
 }
@@ -189,15 +190,20 @@ export default async function(req,res){
     const {account,order}=await billingContext({organizationId,email});
 
     if(action==="inspect"){
-      const provider=await providerFor(order).catch(error=>{
+      let provider=null;
+      let providerUnavailable=false;
+      try{
+        provider=await providerFor(order);
+      }catch(error){
+        providerUnavailable=true;
         console.warn("subscription_provider_inspect_failed",{requestId,organizationId,message:clean(error?.message||error,240)});
-        return null;
-      });
+      }
       return res.json({
         ok:true,
         version:SUBSCRIPTION_MANAGEMENT_VERSION,
         provider:provider?safeProviderView(provider):null,
-        managementReady:Boolean(order?.provider_subscription_id),
+        providerUnavailable,
+        managementReady:Boolean(order?.provider_subscription_id)&&!providerUnavailable,
         checkoutUrl:clean(order?.checkout_url,1000)
       });
     }
