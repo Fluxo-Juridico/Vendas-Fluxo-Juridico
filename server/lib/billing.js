@@ -95,7 +95,7 @@ export function normalizePaymentStatus(status){
   if(normalized==="rejected")return "rejected";
   if(normalized==="refunded")return "refunded";
   if(normalized==="charged_back")return "charged_back";
-  if(normalized==="cancelled")return "cancelled";
+  if(["cancelled","canceled"].includes(normalized))return "cancelled";
   if(normalized==="in_mediation")return "in_mediation";
   return normalized||"unknown";
 }
@@ -285,7 +285,7 @@ export async function tryProvision(order){
 
   try{
     const payload={
-      eventId:String(order.id)+":"+status+":"+(order.provider_payment_id||order.provider_subscription_id||""),
+      eventId:[String(order.id),status,String(order.provider_payment_id||order.provider_subscription_id||""),plan,String(entitlement.seatLimit),String(entitlement.storageLimitGb),String(entitlement.contractVersion)].join(":"),
       orderId:order.id,
       action,
       paymentStatus:status,
