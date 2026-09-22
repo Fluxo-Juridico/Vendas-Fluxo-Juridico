@@ -1030,3 +1030,246 @@ summary:focus-visible{
   .plan-desc{min-height:auto!important}
   .faq summary{font-size:13.5px!important}
 }
+
+
+/* ==========================================================================
+   SALES V8 — READABILITY / ACCESSIBILITY PASS
+   Important commercial content must read comfortably at normal desktop zoom.
+   Miniature product mockups are intentionally excluded.
+   ========================================================================== */
+
+/* Security section from the audit screenshot */
+.security-grid{
+  grid-template-columns:1.08fr .72fr!important;
+  gap:56px!important;
+}
+.security-copy>p{
+  max-width:680px!important;
+  font-size:15.5px!important;
+  line-height:1.72!important;
+}
+.security-list{
+  gap:15px!important;
+  margin-top:30px!important;
+}
+.security-list>div{
+  grid-template-columns:40px 1fr!important;
+  gap:14px!important;
+  align-items:start!important;
+}
+.security-list i{
+  width:34px!important;
+  height:34px!important;
+  border-radius:9px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  color:#2d66a0!important;
+}
+.security-list span{gap:4px!important}
+.security-list strong{
+  font-size:14px!important;
+  line-height:1.35!important;
+  color:var(--sales-night)!important;
+  -webkit-text-fill-color:var(--sales-night)!important;
+}
+.security-list small{
+  font-size:12.5px!important;
+  line-height:1.55!important;
+  color:#657987!important;
+}
+.security-visual{
+  min-height:390px!important;
+}
+.shield-core{
+  width:142px!important;
+  height:142px!important;
+  border-radius:30px!important;
+}
+.shield-core span{font-size:22px!important}
+.shield-core b{
+  font-size:10.5px!important;
+  line-height:1.3!important;
+}
+.shield-core small{
+  font-size:9px!important;
+  line-height:1.35!important;
+  color:#aac0cf!important;
+}
+.shield-tag{
+  padding:9px 12px!important;
+  border-radius:8px!important;
+  font-size:11.5px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  color:#284357!important;
+  box-shadow:0 8px 20px rgba(15,34,48,.06)!important;
+}
+.ring-a{width:310px!important;height:310px!important}
+.ring-b{width:230px!important;height:230px!important}
+.ring-c{width:160px!important;height:160px!important}
+.tag-a{left:6%!important;top:28%!important}
+.tag-b{right:2%!important;top:36%!important}
+.tag-c{left:21%!important;bottom:15%!important}
+
+/* Supporting commercial copy */
+.pricing-trust span{
+  font-size:12.5px!important;
+  line-height:1.45!important;
+}
+.plan-head small{
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+.plan-pill{
+  font-size:11px!important;
+  padding:6px 8px!important;
+}
+.price-wrap>span{
+  font-size:12px!important;
+}
+.capacity span{
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+.plan-card li{
+  font-size:13px!important;
+  line-height:1.55!important;
+}
+.compare-row span,.compare-row b{
+  font-size:12px!important;
+  line-height:1.4!important;
+}
+.compare-row.head span,.compare-row.head b{
+  font-size:11.5px!important;
+}
+.plan-disclaimer{
+  font-size:11.5px!important;
+  line-height:1.55!important;
+}
+
+.flow-rail article small{
+  font-size:11.5px!important;
+}
+.flow-buy span{
+  font-size:12px!important;
+}
+.tour-copy small{
+  font-size:11.5px!important;
+}
+.tour-copy li{
+  font-size:13.5px!important;
+}
+.buy-steps b{
+  font-size:11px!important;
+}
+.buy-steps span{
+  font-size:11.5px!important;
+}
+.security-list strong,
+.security-list small,
+.faq summary,
+.faq details p,
+.contact label>span,
+.checkout-dialog label>span,
+.payment-security b,
+.payment-security p,
+.footer-main>div:last-child,
+.footer-bottom{
+  text-rendering:optimizeLegibility;
+}
+
+/* Header / navigation should never feel like microcopy */
+.brand small{font-size:11px!important}
+.nav nav a{
+  font-size:13.5px!important;
+}
+.nav-actions .login,.nav-actions .nav-cta{
+  font-size:13.5px!important;
+}
+
+/* FAQ / form / checkout */
+.faq summary{
+  font-size:14.5px!important;
+  line-height:1.4!important;
+}
+.faq details p{
+  font-size:13.5px!important;
+  line-height:1.68!important;
+}
+.contact label>span,.checkout-dialog label>span{
+  font-size:12.5px!important;
+}
+.contact input,.contact textarea,.checkout-dialog input{
+  font-size:14px!important;
+}
+.privacy-note,#formStatus,#checkoutStatus{
+  font-size:11.5px!important;
+  line-height:1.5!important;
+}
+.checkout-dialog header small{
+  font-size:11.5px!important;
+}
+.checkout-dialog header p{
+  font-size:13.5px!important;
+}
+.checkout-summary span{
+  font-size:11.5px!important;
+}
+.payment-security b{
+  font-size:12.5px!important;
+}
+.payment-security p{
+  font-size:11.5px!important;
+  line-height:1.5!important;
+}
+.footer-main>div:last-child{
+  font-size:12px!important;
+}
+.footer-bottom{
+  font-size:11.5px!important;
+}
+
+/* Keep user-facing explanatory copy above miniature scale */
+.outcome-number,.feature-top span{
+  font-size:11px!important;
+}
+.outcomes b{
+  font-size:11px!important;
+}
+.text-link{
+  font-size:13px!important;
+}
+.form-title span{
+  font-size:11.5px!important;
+}
+
+/* Tablet/mobile: preserve readability without making layouts oversized */
+@media(max-width:900px){
+  .security-grid{
+    grid-template-columns:1fr!important;
+    gap:26px!important;
+  }
+  .security-visual{
+    min-height:330px!important;
+  }
+}
+@media(max-width:700px){
+  .security-copy>p{
+    font-size:14px!important;
+  }
+  .security-list strong{
+    font-size:13.5px!important;
+  }
+  .security-list small{
+    font-size:12px!important;
+  }
+  .shield-tag{
+    font-size:10.5px!important;
+  }
+  .faq summary{
+    font-size:14px!important;
+  }
+  .faq details p{
+    font-size:13px!important;
+  }
+}
