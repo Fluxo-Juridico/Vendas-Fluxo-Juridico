@@ -1,0 +1,483 @@
+/* Fluxo Jurídico — Sales refinement V3
+   Keeps the approved light/gray composition and corrects hierarchy,
+   contrast, spacing and component inconsistencies without changing commerce. */
+:root{
+  --sales-night:#0f2230;
+  --sales-petrol:#243c53;
+  --sales-gold:#b58c4e;
+  --sales-gold-soft:#f4ead9;
+  --sales-aqua:#4ec7c0;
+  --sales-aqua-deep:#2b8f89;
+  --sales-canvas:#f6f8fa;
+  --sales-surface:#fff;
+  --sales-ink:#23384d;
+  --sales-muted:#6f7f90;
+  --sales-line:#dfe7ec;
+}
+
+/* Base: preserve the approved light neutral background */
+html,body{background:var(--sales-canvas);color:var(--sales-ink)}
+body{font-size:16px}
+main{background:var(--sales-canvas)}
+::selection{background:#e7f4f3;color:var(--sales-night)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:2px solid var(--sales-aqua);outline-offset:2px
+}
+
+/* Announcement: simple, institutional, no decorative gradient */
+.announcement{
+  background:var(--sales-night);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  color:#dce6eb;
+}
+.announcement span{color:#9db0bb}
+.announcement b{color:#fff}
+.announcement a{color:#dce6eb}
+.announcement a:hover{color:#fff}
+
+/* Header: one geometry for secondary and primary actions */
+.nav{
+  min-height:72px;
+  background:rgba(246,248,250,.97);
+  border-bottom:1px solid #dfe6eb;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+.nav.scrolled{
+  background:rgba(255,255,255,.98);
+  box-shadow:0 4px 18px rgba(15,34,48,.05);
+}
+.logo{
+  background:var(--sales-petrol);
+  box-shadow:none;
+  border-radius:10px;
+}
+.nav nav a{color:#5d7180;font-size:12.5px;font-weight:650}
+.nav nav a:after{height:2px;background:var(--sales-gold)}
+.nav-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+.login,
+.nav-cta{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:42px;
+  min-height:42px;
+  margin:0;
+  line-height:1;
+  white-space:nowrap;
+  border-radius:10px;
+  font-size:12.5px;
+  font-weight:720;
+  text-decoration:none;
+}
+.login{
+  padding:0 10px;
+  color:#586b79;
+  background:transparent;
+  border:1px solid transparent;
+}
+.login:hover{
+  color:var(--sales-night);
+  background:#eef3f5;
+  border-color:#e1e8ec;
+}
+.nav-cta{
+  padding:0 16px;
+  background:var(--sales-petrol);
+  color:#fff;
+  border:1px solid var(--sales-petrol);
+  box-shadow:none;
+}
+.nav-cta:hover{
+  background:var(--sales-night);
+  border-color:var(--sales-night);
+  box-shadow:none;
+}
+.nav-cta span{
+  display:inline-block;
+  margin-left:8px;
+  font-size:12px;
+  line-height:1;
+  transform:translateY(-.25px);
+}
+
+/* Hero: light, restrained, no text-gradient/template cue */
+.hero{
+  max-width:1320px;
+  padding-top:88px;
+  padding-bottom:84px;
+  background:transparent;
+}
+.hero-noise{display:none!important}
+.hero-copy{max-width:650px}
+.hero h1{
+  color:var(--sales-night);
+  font-size:clamp(46px,4.1vw,60px);
+  line-height:1.03;
+  letter-spacing:-.045em;
+}
+.hero h1 em{
+  display:inline;
+  padding:0;
+  margin:0;
+  background:none!important;
+  -webkit-background-clip:initial!important;
+  background-clip:initial!important;
+  color:var(--sales-petrol)!important;
+  font-style:normal;
+}
+.hero-lead{
+  max-width:620px;
+  color:var(--sales-muted);
+  font-size:16px;
+  line-height:1.72;
+}
+.hero-actions{align-items:center;gap:10px}
+.btn{
+  min-height:44px;
+  height:44px;
+  padding:0 17px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:710;
+  box-shadow:none;
+}
+.btn.primary{
+  background:var(--sales-petrol);
+  border-color:var(--sales-petrol);
+  box-shadow:none;
+}
+.btn.primary:hover{
+  background:var(--sales-night);
+  border-color:var(--sales-night);
+  box-shadow:none;
+}
+.btn.primary span{margin-left:8px}
+.btn.ghost{
+  background:#fff;
+  border-color:var(--sales-line);
+  color:var(--sales-ink);
+}
+.btn.ghost:hover{
+  background:#f9fbfc;
+  border-color:#ccd9e0;
+}
+.hero-microcopy{
+  margin-top:20px;
+  gap:8px 18px;
+}
+.hero-microcopy span{
+  color:#738593;
+  font-size:11px;
+}
+.hero-microcopy i{color:var(--sales-aqua-deep)}
+
+/* Product mockup: keep useful depth, remove decorative floating excess */
+.window{
+  border-color:#d8e2e8;
+  border-radius:16px;
+  box-shadow:0 18px 48px rgba(15,34,48,.09);
+}
+.window-top{background:#fafbfd;border-bottom-color:#e4eaee}
+.mock-side{background:var(--sales-night)}
+.mock-logo{background:var(--sales-gold);color:#172027}
+.mock-nav.active{
+  background:rgba(255,255,255,.08);
+  box-shadow:inset 2px 0 var(--sales-aqua);
+}
+.mock-title button{background:var(--sales-petrol)!important}
+.floating-card{
+  border-color:#dfe7ec!important;
+  border-radius:10px!important;
+  box-shadow:0 8px 22px rgba(15,34,48,.06)!important;
+}
+.floating-card span{color:var(--sales-aqua-deep)}
+
+/* Continuity strip: compact supporting band, not another hero */
+.continuity-strip{
+  background:#eef3f5!important;
+  color:var(--sales-ink)!important;
+  border-top:1px solid #dfe7ec;
+  border-bottom:1px solid #dfe7ec;
+}
+.continuity-copy span{
+  color:#778a97!important;
+  font-size:10px;
+  letter-spacing:.1em;
+}
+.continuity-copy strong{color:var(--sales-night)!important}
+.continuity-points article{border-left-color:#d9e3e8!important}
+.continuity-points b{color:var(--sales-gold)!important}
+.continuity-points strong{color:var(--sales-ink)!important}
+.continuity-points small{color:#788995!important}
+
+/* General content: calm surfaces */
+.section{padding-top:92px;padding-bottom:92px}
+.eyebrow{
+  color:#7f6a47;
+  font-size:10px;
+  letter-spacing:.1em;
+}
+.section-head h2,.security-copy h2,.contact-copy h2{
+  color:var(--sales-night);
+  letter-spacing:-.035em;
+}
+.section-head p,.security-copy>p,.contact-copy>p{
+  color:var(--sales-muted);
+}
+.outcomes article,.feature,.buy-steps article,.faq details{
+  border-color:var(--sales-line);
+  box-shadow:none;
+}
+.outcomes article:hover,.feature:hover,.buy-steps article:hover{
+  transform:none;
+  box-shadow:none;
+  border-color:#cbd8df;
+}
+.icon-orbit{border-color:#cbd9df}
+.icon-orbit i{
+  background:var(--sales-petrol);
+  box-shadow:0 0 0 6px #edf2f4;
+}
+.feature-primary{background:#f9fbfc}
+.feature-dark{
+  background:var(--sales-night);
+  border-color:#193548;
+}
+.feature-dark h3{color:#fff}
+.feature-dark p{color:#aebec8}
+.feature-dark .feature-top i{
+  background:#123149;
+  border-color:#28495d;
+  color:#d9c398;
+}
+
+/* Workflow dark section: fix the contrast regression from the screenshot */
+.flow-section{
+  background:var(--sales-night)!important;
+}
+.flow-section .section-head.dark .eyebrow{
+  color:#9db7cb!important;
+}
+.flow-section .section-head.dark h2{
+  color:#f4f8fa!important;
+  text-shadow:none!important;
+}
+.flow-section .section-head.dark p{
+  color:#b2c2cc!important;
+}
+.flow-rail article b{
+  background:#163449!important;
+  border-color:#28495c!important;
+  color:#fff!important;
+}
+.flow-rail article small{color:#89a3b4!important}
+.flow-rail article h3{color:#f4f8fa!important}
+.flow-rail article p{color:#aebfc9!important}
+.flow-line{background:#274457!important}
+.flow-line i{background:var(--sales-aqua)!important}
+.flow-buy{
+  background:#102a3c!important;
+  border:1px solid #29475a!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+.flow-buy span{color:#91a8b6!important}
+.flow-buy strong{color:#fff!important}
+.flow-buy a{
+  background:var(--sales-gold)!important;
+  color:#172027!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+.flow-buy a:hover{background:#aa8448!important}
+.flow-buy a i{margin-left:7px}
+
+/* Product tour */
+.tour-shell{
+  border-color:var(--sales-line);
+  border-radius:16px;
+  box-shadow:none;
+}
+.tour-nav{background:#f7f9fa;border-bottom-color:#dfe7ec}
+.tour-nav button{
+  font-size:11.5px;
+  color:#667a88;
+}
+.tour-nav button.active{
+  color:var(--sales-petrol)!important;
+  background:#fff!important;
+  border-color:var(--sales-petrol)!important;
+}
+.tour-ui{background:#f7f9fa;border-color:#dfe7ec;box-shadow:none}
+
+/* Pricing: keep the gray/white field, remove glow/template treatment */
+.pricing-wrap{
+  background:var(--sales-canvas)!important;
+}
+.pricing-glow{display:none!important}
+.pricing-trust span{color:#6f818e}
+.plan-grid{gap:14px}
+.plan-card{
+  border-color:var(--sales-line);
+  border-radius:14px;
+  box-shadow:none;
+  background:#fff;
+}
+.plan-card:hover{
+  transform:none;
+  box-shadow:none;
+  border-color:#c7d5dc;
+}
+.plan-card.featured{
+  border:1.5px solid #c9ad79;
+  box-shadow:none;
+  background:#fffdf8;
+}
+.plan-card.premium{
+  background:var(--sales-night);
+  border-color:#1c3b50;
+}
+.popular{
+  left:20px;
+  right:auto;
+  width:auto;
+  height:auto;
+  top:-12px;
+  padding:6px 9px;
+  border-radius:7px;
+  background:var(--sales-gold);
+  color:#172027;
+  box-shadow:none;
+  font-size:8px;
+  letter-spacing:.055em;
+}
+.plan-pill{
+  border-radius:6px;
+  background:#eef3f5;
+  color:#526c7b;
+}
+.featured .plan-pill{
+  background:var(--sales-gold-soft);
+  color:#72562f;
+}
+.premium .plan-pill{
+  background:#17354a;
+  color:#c0d1db;
+}
+.plan-card h3{color:var(--sales-night)}
+.premium h3{color:#fff}
+.plan-desc{color:var(--sales-muted)}
+.premium .plan-desc{color:#9fb2bf}
+.price{color:var(--sales-night)}
+.premium .price{color:#fff}
+.capacity span{
+  background:#fafcfd;
+  border-color:#dfe7ec;
+}
+.capacity b{color:var(--sales-petrol)}
+.premium .capacity span{
+  background:#102b3e;
+  border-color:#29485c;
+}
+.plan-cta{
+  background:var(--sales-petrol);
+  box-shadow:none;
+  border-radius:9px;
+}
+.plan-cta:hover{
+  transform:none;
+  background:var(--sales-night);
+  box-shadow:none;
+}
+.featured .plan-cta{
+  background:var(--sales-gold);
+  color:#172027;
+}
+.featured .plan-cta:hover{background:#aa8448}
+.premium .plan-cta{
+  background:#fff;
+  color:var(--sales-night);
+}
+.comparison{box-shadow:none;border-color:var(--sales-line)}
+.compare-row.head{background:#f7f9fa}
+.compare-row b{color:var(--sales-petrol)}
+
+/* Purchase flow: remove decorative radial blob */
+.buy-steps article:after{display:none!important}
+.buy-steps b{
+  background:#eef3f5;
+  color:var(--sales-petrol);
+}
+.buy-steps span{color:#7c6a49}
+
+/* Security */
+.security-section{
+  background:#eef3f5;
+  border-color:#dbe4e9;
+}
+.shield-ring{animation:none!important;border-color:#cbd8df}
+.shield-core{background:var(--sales-petrol)!important}
+.shield-tag{box-shadow:none;border-color:#d8e2e7}
+.security-list i{
+  color:var(--sales-petrol);
+  border-color:#d1dde4;
+  background:#fff;
+}
+
+/* FAQ and contact */
+.faq details{border-radius:12px}
+.faq summary span{color:#718592}
+.contact-wrap{
+  background:var(--sales-night)!important;
+}
+.contact-wrap .contact-copy .eyebrow{
+  color:#a8b9c3!important;
+}
+.contact-wrap .contact-copy h2{
+  color:#f4f8fa!important;
+}
+.contact-wrap .contact-copy>p{
+  color:#b2c2cc!important;
+}
+.text-link{color:#9dd8d4}
+.contact form{
+  border-radius:14px;
+  box-shadow:0 16px 42px rgba(4,17,27,.18);
+}
+.contact input:focus,.contact textarea:focus,.checkout-dialog input:focus{
+  border-color:var(--sales-aqua);
+  box-shadow:0 0 0 3px rgba(78,199,192,.12);
+}
+
+/* Checkout */
+.checkout-dialog{
+  border-radius:16px;
+  box-shadow:0 24px 70px rgba(15,34,48,.22);
+}
+.checkout-dialog::backdrop{background:rgba(4,17,27,.58)}
+.payment-security{
+  background:#f4faf9!important;
+  border-color:#d4e9e6!important;
+}
+
+/* Responsive consistency */
+@media(max-width:900px){
+  .nav-actions{gap:6px}
+  .login{padding:0 8px}
+  .nav-cta{padding:0 13px}
+}
+@media(max-width:700px){
+  .nav{min-height:64px}
+  .hero{padding-top:64px;padding-bottom:70px}
+  .hero h1{font-size:clamp(37px,11vw,46px)}
+  .continuity-points article{border-left:0!important;border-top:1px solid #d9e3e8!important;padding-top:16px!important}
+  .continuity-points article:first-child{border-top:0!important;padding-top:0!important}
+  .flow-section .section{padding-top:72px;padding-bottom:72px}
+  .flow-buy{align-items:flex-start!important}
+}
