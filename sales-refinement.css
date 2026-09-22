@@ -481,3 +481,235 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .flow-section .section{padding-top:72px;padding-bottom:72px}
   .flow-buy{align-items:flex-start!important}
 }
+
+
+/* ==========================================================================
+   SALES V4 — vivid blue + aqua, less gold, stricter geometry
+   ========================================================================== */
+:root{
+  --sales-blue:#2563eb;
+  --sales-blue-2:#3b82f6;
+  --sales-aqua:#22c7b8;
+  --sales-aqua-2:#16a89d;
+  --sales-violet:#6558d9;
+  --sales-night:#0b2131;
+  --sales-petrol:#153d57;
+  --sales-canvas:#f6f8fa;
+  --sales-surface:#ffffff;
+  --sales-ink:#1f3749;
+  --sales-muted:#6e7f8e;
+  --sales-line:#dfe7ec;
+  --sales-gold:#b58c4e;
+}
+
+/* Header CTA geometry — exact same vertical system */
+.nav-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  min-height:40px!important;
+}
+.nav-actions .login,
+.nav-actions .nav-cta{
+  box-sizing:border-box!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin:0!important;
+  border-radius:9px!important;
+  line-height:1!important;
+  font-size:12.5px!important;
+  font-weight:720!important;
+  vertical-align:middle!important;
+  transform:none!important;
+}
+.nav-actions .login{
+  min-width:58px!important;
+  padding:0 10px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#5b6d7b!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+}
+.nav-actions .login:hover{
+  color:var(--sales-night)!important;
+  background:#edf3f7!important;
+  border-color:#dde7ed!important;
+}
+.nav-actions .nav-cta{
+  min-width:130px!important;
+  padding:0 14px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  color:#fff!important;
+  border:1px solid transparent!important;
+  background:linear-gradient(135deg,#2458d8 0%,#2f76e8 58%,#2daeb3 135%)!important;
+  box-shadow:0 7px 18px rgba(37,99,235,.16)!important;
+}
+.nav-actions .nav-cta:hover{
+  background:linear-gradient(135deg,#1f4fc8 0%,#286cda 62%,#289da3 140%)!important;
+  box-shadow:0 9px 22px rgba(37,99,235,.20)!important;
+  transform:none!important;
+}
+.nav-cta-icon{
+  width:14px!important;
+  height:14px!important;
+  flex:0 0 14px!important;
+  display:block!important;
+  stroke:currentColor!important;
+}
+
+/* Vivid identity: restrained use of gradient, no gold-dominant accents */
+.nav nav a:after{
+  background:linear-gradient(90deg,var(--sales-blue),var(--sales-aqua))!important;
+}
+.logo{
+  background:linear-gradient(145deg,#173f5a,#24638a)!important;
+  color:#fff!important;
+}
+.hero h1{
+  color:var(--sales-night)!important;
+  -webkit-text-fill-color:var(--sales-night)!important;
+}
+.hero h1 em{
+  display:inline!important;
+  background:linear-gradient(100deg,#2458d8 0%,#3b82f6 48%,#22bcae 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+}
+.hero .btn.primary{
+  background:linear-gradient(135deg,#2458d8 0%,#2f76e8 62%,#2daeb3 135%)!important;
+  border-color:transparent!important;
+  color:#fff!important;
+}
+.hero .btn.primary:hover{
+  background:linear-gradient(135deg,#1f4fc8 0%,#286cda 62%,#289da3 140%)!important;
+}
+.hero-microcopy i{color:var(--sales-aqua-2)!important}
+
+/* Workflow — explicit text fill fixes the invisible-heading regression */
+.flow-section{
+  background:linear-gradient(135deg,#081b29 0%,#0b2436 52%,#0d2e43 100%)!important;
+}
+.flow-section:before{
+  content:none!important;
+  display:none!important;
+}
+.flow-section .section-head.dark .eyebrow{
+  color:#75a8ff!important;
+  -webkit-text-fill-color:#75a8ff!important;
+}
+.flow-section .section-head.dark h2{
+  background:none!important;
+  background-image:none!important;
+  -webkit-background-clip:border-box!important;
+  background-clip:border-box!important;
+  color:#f7fafc!important;
+  -webkit-text-fill-color:#f7fafc!important;
+  opacity:1!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+.flow-section .section-head.dark p{
+  color:#b8c8d1!important;
+  -webkit-text-fill-color:#b8c8d1!important;
+  opacity:1!important;
+}
+.flow-line{background:#284558!important}
+.flow-line i{
+  background:linear-gradient(90deg,var(--sales-blue),var(--sales-aqua))!important;
+}
+.flow-rail article b{
+  background:#113149!important;
+  border-color:#2b5067!important;
+  color:#9fc3ff!important;
+  box-shadow:0 0 0 7px #0a2132!important;
+}
+.flow-rail article small{color:#7f9aac!important}
+.flow-rail article h3{
+  color:#f6f9fb!important;
+  -webkit-text-fill-color:#f6f9fb!important;
+}
+.flow-rail article p{color:#aebfca!important}
+.flow-buy{
+  background:#0f2b3f!important;
+  border-color:#315469!important;
+}
+.flow-buy a{
+  background:linear-gradient(135deg,var(--sales-blue),#2d7ae9)!important;
+  color:#fff!important;
+}
+.flow-buy a:hover{
+  background:linear-gradient(135deg,#2057d6,#2470d9)!important;
+}
+
+/* Supporting accents become blue/aqua instead of gold */
+.continuity-copy span{color:#58768a!important}
+.continuity-points b{color:var(--sales-blue)!important}
+.eyebrow{color:#456b84!important}
+.icon-orbit{
+  border-color:#bcd7e0!important;
+}
+.icon-orbit i{
+  background:linear-gradient(145deg,var(--sales-blue),var(--sales-aqua))!important;
+  box-shadow:0 0 0 6px #eaf4f6!important;
+}
+.feature-dark .feature-top i{
+  color:#9de2dc!important;
+}
+
+/* Plans — more lively, less beige/gold */
+.plan-card.featured{
+  border:1.5px solid #73a4ec!important;
+  background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)!important;
+}
+.popular{
+  background:linear-gradient(90deg,var(--sales-blue),#3f82eb)!important;
+  color:#fff!important;
+}
+.featured .plan-pill{
+  background:#eaf2ff!important;
+  color:#2c5fb8!important;
+}
+.featured .plan-cta{
+  background:linear-gradient(135deg,var(--sales-blue),#2f7be9)!important;
+  color:#fff!important;
+}
+.featured .plan-cta:hover{
+  background:linear-gradient(135deg,#2057d6,#286fda)!important;
+}
+.plan-pill{
+  background:#eef4f7!important;
+  color:#557080!important;
+}
+.plan-card li:before{
+  color:var(--sales-aqua-2)!important;
+}
+.compare-row b{color:var(--sales-blue)!important}
+.pricing-trust i{color:var(--sales-aqua-2)!important}
+
+/* Tour, links and focus accents */
+.tour-nav button.active{
+  color:#1e5fc6!important;
+  border-color:#4b86e7!important;
+}
+.text-link{color:#4fcfc3!important}
+.contact input:focus,
+.contact textarea:focus,
+.checkout-dialog input:focus{
+  border-color:var(--sales-aqua)!important;
+  box-shadow:0 0 0 3px rgba(34,199,184,.13)!important;
+}
+
+/* Keep gold rare: only subtle premium/brand nuance */
+.premium .plan-pill{
+  background:#17364d!important;
+  color:#b9cad5!important;
+}
