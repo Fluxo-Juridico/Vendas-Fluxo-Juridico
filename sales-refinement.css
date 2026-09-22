@@ -809,3 +809,224 @@ summary:focus-visible{
   .plan-card li{font-size:11.5px!important}
   .faq summary{font-size:12.5px!important}
 }
+
+
+/* ==========================================================================
+   SALES V7 — PROFESSIONAL COMMERCIAL HIERARCHY
+   Inspired by mature legaltech landing-page patterns: stronger hierarchy,
+   readable supporting copy, obvious CTAs, restrained surfaces.
+   ========================================================================== */
+.announcement{
+  height:36px!important;
+  font-size:11.5px!important;
+}
+.brand strong{font-size:14px!important}
+.hero-copy{max-width:690px!important}
+.hero h1{
+  font-size:clamp(50px,4.55vw,68px)!important;
+  line-height:1.01!important;
+  letter-spacing:-.05em!important;
+}
+.hero-lead{
+  max-width:650px!important;
+  font-size:17px!important;
+  line-height:1.72!important;
+}
+.hero-actions{margin-top:27px!important}
+.hero-actions .btn{
+  height:46px!important;
+  min-height:46px!important;
+  padding-left:19px!important;
+  padding-right:19px!important;
+  font-size:13.5px!important;
+}
+.hero-microcopy{margin-top:22px!important}
+
+.section{
+  padding-top:96px!important;
+  padding-bottom:96px!important;
+}
+.section-head{
+  margin-bottom:34px!important;
+}
+.section-head h2,
+.security-copy h2,
+.contact-copy h2{
+  font-size:clamp(36px,3.4vw,44px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.04em!important;
+  margin-top:12px!important;
+  margin-bottom:16px!important;
+}
+.section-head p,
+.security-copy>p,
+.contact-copy>p{
+  max-width:720px!important;
+  font-size:15px!important;
+  line-height:1.7!important;
+}
+.section-head.compact{max-width:720px!important}
+
+.outcomes{gap:16px!important}
+.outcomes article{
+  padding:26px!important;
+  min-height:240px!important;
+  border-radius:15px!important;
+}
+.outcomes h3{
+  font-size:20px!important;
+  line-height:1.2!important;
+  margin-bottom:10px!important;
+}
+.outcomes p{
+  font-size:14px!important;
+  line-height:1.65!important;
+}
+
+.feature-grid{gap:15px!important}
+.feature{
+  padding:24px!important;
+  min-height:278px!important;
+  border-radius:15px!important;
+}
+.feature h3{
+  font-size:20px!important;
+  line-height:1.2!important;
+  margin-top:28px!important;
+  margin-bottom:10px!important;
+}
+.feature p{
+  font-size:14px!important;
+  line-height:1.65!important;
+}
+.feature-top span{font-size:11px!important}
+
+.flow-section .section-head{max-width:820px!important}
+.flow-rail article h3{font-size:21px!important}
+.flow-rail article p{font-size:13.5px!important}
+.flow-buy{padding:20px 22px!important}
+.flow-buy strong{font-size:17px!important}
+
+.tour-shell{border-radius:15px!important}
+.tour-copy h3{
+  font-size:22px!important;
+  line-height:1.2!important;
+}
+.tour-copy p{
+  font-size:14px!important;
+  line-height:1.65!important;
+}
+.tour-copy li{font-size:13px!important}
+
+.pricing .section-head,
+.pricing-wrap .section-head{
+  max-width:860px!important;
+}
+.plan-grid{gap:16px!important}
+.plan-card{
+  padding:24px!important;
+  border-radius:15px!important;
+}
+.plan-card h3{
+  font-size:20px!important;
+  line-height:1.2!important;
+  min-height:auto!important;
+  margin-bottom:10px!important;
+}
+.plan-desc{
+  font-size:13.5px!important;
+  line-height:1.62!important;
+  min-height:64px!important;
+}
+.price{
+  font-size:32px!important;
+  line-height:1!important;
+}
+.price-wrap{margin-top:22px!important;margin-bottom:14px!important}
+.price-wrap>span{font-size:11px!important}
+.capacity{gap:7px!important}
+.capacity span{
+  font-size:11px!important;
+  padding:7px 8px!important;
+}
+.plan-cta{
+  height:44px!important;
+  font-size:13px!important;
+}
+.plan-card li{
+  font-size:12.5px!important;
+  line-height:1.55!important;
+}
+.plan-card ul{gap:9px!important}
+.compare-row span,.compare-row b{font-size:11.5px!important}
+.plan-disclaimer{font-size:11px!important}
+
+.buy-steps{gap:15px!important}
+.buy-steps article{
+  padding:24px!important;
+  min-height:210px!important;
+}
+.buy-steps h3{
+  font-size:19px!important;
+  line-height:1.22!important;
+}
+.buy-steps p{
+  font-size:13.5px!important;
+  line-height:1.62!important;
+}
+
+.security-list strong{font-size:13px!important}
+.security-list small{font-size:12px!important}
+.faq-grid{gap:10px!important}
+.faq details{padding-left:18px!important;padding-right:18px!important}
+.faq summary{
+  min-height:58px!important;
+  font-size:14px!important;
+}
+.faq details p{
+  font-size:13px!important;
+  line-height:1.65!important;
+  margin-bottom:17px!important;
+}
+
+.contact{gap:72px!important}
+.contact form{
+  padding:24px!important;
+  gap:14px!important;
+}
+.form-title strong{font-size:16px!important}
+.form-title span{font-size:11px!important}
+.contact label>span,.checkout-dialog label>span{font-size:12px!important}
+.contact input,.checkout-dialog input{
+  min-height:44px!important;
+  font-size:13.5px!important;
+}
+.contact textarea{font-size:13.5px!important}
+.text-link{font-size:12.5px!important}
+
+.checkout-dialog header h2{font-size:22px!important}
+.checkout-dialog header p{font-size:13px!important}
+.checkout-summary strong{font-size:14px!important}
+.checkout-summary span{font-size:11px!important}
+.payment-security b{font-size:12px!important}
+.payment-security p{font-size:11px!important}
+.checkout-dialog footer button{min-height:42px!important;font-size:12.5px!important}
+
+.footer-main>div:last-child{font-size:11.5px!important}
+.footer-bottom{font-size:11px!important}
+
+@media(max-width:900px){
+  .hero h1{font-size:clamp(45px,7vw,60px)!important}
+  .section{padding-top:82px!important;padding-bottom:82px!important}
+}
+@media(max-width:700px){
+  .announcement{font-size:10.5px!important}
+  .hero h1{font-size:clamp(38px,11vw,48px)!important}
+  .hero-lead{font-size:15.5px!important}
+  .section{padding-top:70px!important;padding-bottom:70px!important}
+  .section-head h2,.security-copy h2,.contact-copy h2{font-size:34px!important}
+  .section-head p,.security-copy>p,.contact-copy>p{font-size:14px!important}
+  .outcomes p,.feature p,.buy-steps p{font-size:13px!important}
+  .plan-desc{min-height:auto!important}
+  .faq summary{font-size:13.5px!important}
+}
