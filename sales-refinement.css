@@ -745,3 +745,67 @@ summary:focus-visible{
     scroll-behavior:auto!important;
   }
 }
+
+
+/* ==========================================================================
+   SALES V6 — TYPOGRAPHY POLISH
+   Raises only real user-facing copy. Mini product mockups keep their scale.
+   ========================================================================== */
+.brand small{font-size:10px!important}
+.nav nav a,.nav-actions .login,.nav-actions .nav-cta{font-size:13px!important}
+.hero-microcopy span{font-size:12px!important}
+.eyebrow{font-size:11px!important}
+.outcome-number,.feature-top span{font-size:10.5px!important}
+.outcomes p,.feature p{font-size:13.5px!important;line-height:1.68!important}
+.outcomes b{font-size:10.5px!important}
+.flow-rail article b{font-size:11px!important}
+.flow-rail article small{font-size:10.5px!important}
+.flow-rail article h3{font-size:20px!important}
+.flow-rail article p{font-size:13px!important;line-height:1.65!important}
+.flow-buy span{font-size:11px!important}
+.flow-buy strong{font-size:16px!important}
+.flow-buy a{font-size:12.5px!important}
+.tour-nav button{font-size:12px!important}
+.tour-copy small{font-size:10.5px!important}
+.tour-copy li{font-size:12.5px!important;line-height:1.55!important}
+.pricing-trust span{font-size:11.5px!important}
+.popular{font-size:9.5px!important}
+.plan-head small{font-size:10.5px!important}
+.plan-pill{font-size:10px!important}
+.plan-desc{font-size:12.5px!important;line-height:1.62!important}
+.price-wrap>span{font-size:10.5px!important}
+.capacity span{font-size:10.5px!important}
+.plan-cta{font-size:12.5px!important}
+.plan-card li{font-size:12px!important;line-height:1.5!important}
+.compare-row span,.compare-row b{font-size:11px!important}
+.compare-row.head span,.compare-row.head b{font-size:10.5px!important}
+.plan-disclaimer{font-size:10.5px!important}
+.checkout-result{font-size:12px!important}
+.result-actions a{font-size:11.5px!important}
+.buy-steps b{font-size:10.5px!important}
+.buy-steps span{font-size:10.5px!important}
+.buy-steps p{font-size:12.5px!important;line-height:1.62!important}
+.security-list strong{font-size:12.5px!important}
+.security-list small{font-size:11.5px!important;line-height:1.55!important}
+.shield-tag{font-size:10px!important}
+.faq summary{font-size:13px!important}
+.faq details p{font-size:12px!important;line-height:1.6!important}
+.text-link{font-size:12px!important}
+.form-title span{font-size:10.5px!important}
+.contact label>span,.checkout-dialog label>span{font-size:11.5px!important}
+.contact input,.contact textarea,.checkout-dialog input{font-size:13px!important}
+.privacy-note,#formStatus,#checkoutStatus{font-size:10.5px!important}
+.checkout-dialog header small{font-size:10.5px!important}
+.checkout-dialog header p{font-size:12px!important}
+.checkout-summary span{font-size:10.5px!important}
+.payment-security b{font-size:11.5px!important}
+.payment-security p{font-size:10.5px!important}
+.footer-main>div:last-child{font-size:11px!important}
+.footer-bottom{font-size:10.5px!important}
+
+@media(max-width:700px){
+  .brand small{font-size:9px!important}
+  .hero-microcopy span{font-size:11px!important}
+  .plan-card li{font-size:11.5px!important}
+  .faq summary{font-size:12.5px!important}
+}
