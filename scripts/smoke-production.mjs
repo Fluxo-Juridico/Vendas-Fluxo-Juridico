@@ -1,7 +1,7 @@
 const base = String(process.env.PRODUCTION_BASE_URL || "").replace(/\/$/, "");
 const expectedSha = String(process.env.EXPECTED_SHA || "").trim();
 const expectedService = "fluxo-juridico-vendas";
-const requiredPaths = ["/","/termos.html","/privacidade.html"];
+const requiredPaths = ["/", "/termos.html", "/privacidade.html"];
 
 if (!base.startsWith("https://")) {
   throw new Error("PRODUCTION_BASE_URL must be an https URL.");
