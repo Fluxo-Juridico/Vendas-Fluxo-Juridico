@@ -99,6 +99,17 @@ export function wrapHandler(handler, { service = "api" } = {}) {
     try {
       return await handler(req, res);
     } catch {
+      console.error(
+        JSON.stringify({
+          event: "api_unhandled_error",
+          service: String(service || "api").slice(0, 80),
+          requestId: req.requestId || "",
+          method,
+          path,
+          statusCode: 500,
+          durationMs: Date.now() - startedAt
+        })
+      );
       if (res.headersSent) return;
       return apiError(req, res, 500, "Não foi possível concluir a operação.", "internal_error");
     }
