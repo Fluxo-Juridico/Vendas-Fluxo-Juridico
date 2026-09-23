@@ -39,7 +39,7 @@ for (const file of files) {
 
   const source = await fs.readFile(file, "utf8");
   for (const [index, line] of source.split(/\r?\n/).entries()) {
-    if (/\b(?:TODO|FIXME|HACK)\b/i.test(line) && !/(?:#\d+|https:\/\/github\.com\/)/.test(line)) {
+    if (/(?:\/\/|\/\*+|\*)\s*(?:TODO|FIXME|HACK)\b/i.test(line) && !/(?:#\d+|https:\/\/github\.com\/)/.test(line)) {
       errors.push(`Comentário de manutenção sem issue rastreável: ${normalized}:${index + 1}`);
     }
   }
