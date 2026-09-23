@@ -49,3 +49,9 @@ O browser E2E cobre a contratação visível: escolha de plano → dados do chec
 ## Baseline congelada
 
 As fronteiras estruturais do site de Vendas estão registradas em `docs/architecture-freeze.md`. O Vendas permanece proprietário da aquisição, billing público e contratos compartilhados; não recebe schema, regras jurídicas ou Auth do produto.
+
+## Legibilidade e manutenção
+
+O código ativo usa nomes de arquivo em `kebab-case`, nomenclatura baseada em responsabilidade e formatação canônica por Prettier. Comentários devem registrar decisões, invariantes ou contexto externo; não devem repetir o que nomes de funções e variáveis já expressam.
+
+Marcadores `TODO`, `FIXME` e `HACK` só podem permanecer vinculados a uma issue rastreável. `npm run check:maintainability` verifica essas convenções e participa de `npm run check:static`. O comando `npm run format` normaliza a baseline de código, configuração e documentação.
