@@ -3,6 +3,8 @@ import path from "node:path";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 import {PLAN_CATALOG as PLAN_DEFAULTS,BILLING_CONTRACT_VERSION,BILLING_CONTRACT_FINGERPRINT,contractDescriptor} from "../contracts/billing-v1.js";
+import {ENGINEERING_STANDARD_VERSION,REQUIRED_ENGINEERING_SCRIPTS} from "../contracts/engineering-v1.js";
+import {ACQUISITION_CONTRACT_VERSION,ACQUISITION_STAGES,isValidAcquisitionProgression} from "../contracts/acquisition-v1.js";
 
 const errors = [];
 const warnings = [];
@@ -15,6 +17,15 @@ const requiredFiles = [
   "platform/runtime/index.js",
   "contracts/billing-v1.js",
   "contracts/subscription-management-v1.js",
+  "contracts/engineering-v1.js",
+  "contracts/acquisition-v1.js",
+  "docs/engineering-standard.md",
+  "eslint.config.js",
+  ".prettierrc.json",
+  ".editorconfig",
+  "playwright.config.mjs",
+  "scripts/serve-site.mjs",
+  "tests/e2e/acquisition-flow.spec.mjs",
   "server/lib/http.js",
   "tests/http-contract.test.mjs",
   "server/lib/billing.js",
@@ -45,9 +56,23 @@ if (!gitignoreEntries.includes("public/")) errors.push("public/ continua sendo a
 if (!await exists("api")) errors.push("Diretório de adaptadores versionados ausente: api/");
 
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
-if (pkg?.scripts?.verify !== "npm test && npm run check") errors.push("package.json deve expor verify como testes + auditoria estrutural.");
+if (pkg?.scripts?.verify !== "npm test && npm run check && npm run check:static") errors.push("package.json deve expor verify com testes, auditoria estrutural e análise estática.");
+for (const script of ["lint","format","format:check","check:static","test:e2e"]) {
+  if (!pkg?.scripts?.[script]) errors.push(`Script de engenharia ausente: ${script}`);
+}
+for (const script of REQUIRED_ENGINEERING_SCRIPTS) {
+  if (!pkg?.scripts?.[script]) errors.push(`engineering-v1 exige script: ${script}`);
+}
+if (pkg?.devDependencies?.eslint !== "9.35.0") errors.push("ESLint deve permanecer fixado em 9.35.0 até atualização deliberada.");
+if (pkg?.devDependencies?.prettier !== "3.6.2") errors.push("Prettier deve permanecer fixado em 3.6.2 até atualização deliberada.");
+if (pkg?.devDependencies?.["@playwright/test"] !== "1.63.0") errors.push("@playwright/test deve permanecer fixado em 1.63.0 até atualização deliberada.");
 if (JSON.stringify(pkg.files)!==JSON.stringify(["contracts"])) errors.push("Pacote compartilhado deve publicar somente contracts/.");
-const expectedContractExports={"./billing-v1":"./contracts/billing-v1.js","./subscription-management-v1":"./contracts/subscription-management-v1.js"};
+const expectedContractExports={
+  "./billing-v1":"./contracts/billing-v1.js",
+  "./subscription-management-v1":"./contracts/subscription-management-v1.js",
+  "./engineering-v1":"./contracts/engineering-v1.js",
+  "./acquisition-v1":"./contracts/acquisition-v1.js"
+};
 if (JSON.stringify(pkg.exports)!==JSON.stringify(expectedContractExports)) errors.push("package.json não expõe os exports canônicos de contratos.");
 const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
 if (runtimeDep !== "file:./platform/runtime") {
@@ -55,6 +80,15 @@ if (runtimeDep !== "file:./platform/runtime") {
 }
 if (pkg?.scripts?.build !== "node scripts/generate-api-wrappers.mjs") {
   errors.push("O build deve gerar somente os wrappers de api/ a partir de server/api.");
+}
+
+if (ENGINEERING_STANDARD_VERSION!=="engineering-v1") errors.push("Versão do padrão de engenharia divergente.");
+if (ACQUISITION_CONTRACT_VERSION!=="acquisition-v1") errors.push("Versão do contrato de aquisição divergente.");
+if (!isValidAcquisitionProgression(ACQUISITION_STAGES)) errors.push("Sequência acquisition-v1 inválida.");
+
+const qualityWorkflow=await fs.readFile(".github/workflows/quality-gate.yml","utf8").catch(()=> "");
+for (const token of ["npm run check:static","acquisition-e2e","npx playwright install --with-deps chromium","npm run test:e2e"]) {
+  if (!qualityWorkflow.includes(token)) errors.push(`Quality Gate incompleto: falta ${token}`);
 }
 
 const vercelConfig = JSON.parse(await fs.readFile("vercel.json","utf8").catch(()=> "{}"));
