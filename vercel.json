@@ -38,5 +38,23 @@
       "path": "/api/jobs/retry-provisioning",
       "schedule": "15 3 * * *"
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/termos.html",
+      "destination": "/api/terms"
+    },
+    {
+      "source": "/termos",
+      "destination": "/api/terms"
+    },
+    {
+      "source": "/privacidade.html",
+      "destination": "/api/privacy"
+    },
+    {
+      "source": "/privacidade",
+      "destination": "/api/privacy"
+    }
   ]
 }
