@@ -3323,3 +3323,32 @@ body{
   box-shadow:none;
 
 }
+
+
+/* Checkout legal acceptance */
+.legal-consent{
+  display:flex!important;
+  align-items:flex-start;
+  gap:10px;
+  margin-top:16px;
+  padding:13px 14px;
+  border:1px solid #dbe3ea;
+  border-radius:12px;
+  background:#f8fafc
+}
+.legal-consent input{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px;
+  margin:1px 0 0;
+  padding:0!important
+}
+.legal-consent span{
+  font-size:11px;
+  line-height:1.55;
+  color:#536172
+}
+.legal-consent a,.privacy-note a{
+  text-decoration:underline;
+  text-underline-offset:2px
+}
