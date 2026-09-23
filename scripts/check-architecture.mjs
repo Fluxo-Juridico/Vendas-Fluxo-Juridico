@@ -250,9 +250,16 @@ for (const token of [
 const wrapperSource = await fs
   .readFile("scripts/generate-api-wrappers.mjs", "utf8")
   .catch(() => "");
-for (const token of ["wrapHandler", "httpModule", "guarded API wrapper"]) {
+for (const token of [
+  "wrapHandler",
+  "httpModule",
+  "internalFiles",
+  "directFiles",
+  "\"[route].js\"",
+  "apiError"
+]) {
   if (!wrapperSource.includes(token))
-    errors.push(`Gerador de wrappers sem proteção HTTP: falta ${token}`);
+    errors.push(`Gerador de wrappers/consolidação incompleto: falta ${token}`);
 }
 
 const expectedPlans = {
@@ -352,7 +359,7 @@ console.log(
     {
       ok: true,
       app: "fluxo-juridico-vendas",
-      architecture: "server-source-plus-api-wrappers",
+      architecture: "server-source-plus-consolidated-api-wrappers",
       localRuntimeAdapter: true,
       serverApiFiles: serverApiFiles.length,
       warnings
