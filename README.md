@@ -77,6 +77,8 @@ Preços, usuários e armazenamento podem ser configurados pelas variáveis docum
 
 - `npm run verify`: executa testes e a auditoria estrutural local em uma única etapa.
 - `npm run check`: valida arquitetura, sintaxe, segredos, billing, catálogo de planos e ausência de legado.
+- `npm run check:static`: executa ESLint e a verificação de formatação canônica.
+- `npm run test:e2e`: executa no Chromium a jornada comercial de checkout até o link de primeiro acesso.
 - `npm run build`: gera os wrappers de `api/` e os arquivos públicos temporários sem versioná-los.
 - `npm run predeploy`: valida a configuração necessária para publicar.
 
@@ -99,6 +101,8 @@ Este repositório é a **fonte canônica** dos contratos entre Vendas, Administr
 
 - `@fluxo-juridico/contracts/billing-v1`
 - `@fluxo-juridico/contracts/subscription-management-v1`
+- `@fluxo-juridico/contracts/acquisition-v1`
+- `@fluxo-juridico/contracts/engineering-v1`
 
 Os consumidores instalam este repositório público sob o alias `@fluxo-juridico/contracts` e fixam um **SHA imutável**. Alterar `main` aqui não muda silenciosamente os consumidores; a adoção de uma nova versão exige atualização deliberada do SHA em cada aplicativo.
 

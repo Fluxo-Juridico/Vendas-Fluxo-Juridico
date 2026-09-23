@@ -26,6 +26,8 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: Run automated tests
         run: npm test
+      - name: Static analysis and canonical formatting
+        run: npm run check:static
       - name: Check architecture and integrity
         shell: bash
         run: |
@@ -50,3 +52,32 @@ jobs:
           BILLING_BRIDGE_SECRET: billing_bridge_ci_placeholder_1234567890
           CRON_SECRET: cron_ci_placeholder_12345678901234567890
           SAAS_BASE_URL: https://saas.example.com
+
+  acquisition-e2e:
+    name: acquisition-e2e
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run acquisition browser flow
+        run: npm run test:e2e
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acquisition-playwright-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7

@@ -23,16 +23,26 @@ Não criar folhas `final.css`, `fix-v2.css`, `refinement.css` ou similares. Alte
 - `api/`: wrappers versionados gerados; nunca editar manualmente.
 - `contracts/billing-v1.js`: fonte canônica do billing compartilhado.
 - `contracts/subscription-management-v1.js`: fonte canônica da gestão de assinatura compartilhada.
+- `contracts/acquisition-v1.js`: jornada canônica de aquisição, do checkout ao primeiro login.
+- `contracts/engineering-v1.js`: padrão de engenharia compartilhado pelos três repositórios.
 - `package.json#exports`: superfície pública do pacote `@fluxo-juridico/contracts`; consumidores devem fixar um SHA imutável.
 
 ## Antes de integrar
 
 1. `npm run verify`
-2. `npm run build`
-3. `npm run predeploy`
-4. revisar o diff para segredos e código de outro domínio
-5. integrar somente com CI verde
+2. `npm run test:e2e`
+3. `npm run build`
+4. `npm run predeploy`
+5. revisar o diff para segredos e código de outro domínio
+6. integrar somente com CI verde
 
 ## Publicação
 
 Somente `main` gera deploy automático. Um release só está concluído quando o deployment de produção estiver READY e checkout/webhook não apresentarem erros novos.
+
+
+## Padrão compartilhado
+
+O contrato `engineering-v1` é comum ao Vendas, Principal e Administrativo. O CI aplica ESLint de segurança/análise estática e o formatter canônico. Mudanças em integração ou aquisição devem usar `@fluxo-juridico/contracts` e preservar a sequência definida em `acquisition-v1`.
+
+O browser E2E cobre a contratação visível: escolha de plano → dados do checkout → retorno de pagamento aprovado → provisionamento ativado → link de primeiro acesso.
