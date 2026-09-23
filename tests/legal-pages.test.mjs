@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PRIVACY_HTML, TERMS_HTML } from "../server/lib/legal-pages.js";
 
 const terms = readFileSync(new URL("../termos.html", import.meta.url), "utf8");
@@ -19,4 +19,9 @@ test("production routes expose both legal documents with clean and html URLs", (
     { source: "/privacidade.html", destination: "/api/privacy" },
     { source: "/privacidade", destination: "/api/privacy" }
   ]);
+});
+
+test("source-time Vercel wrappers exist for legal functions", () => {
+  assert.equal(existsSync(new URL("../api/terms.js", import.meta.url)), true);
+  assert.equal(existsSync(new URL("../api/privacy.js", import.meta.url)), true);
 });
