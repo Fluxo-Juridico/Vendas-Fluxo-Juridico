@@ -21,7 +21,9 @@ Não criar folhas `final.css`, `fix-v2.css`, `refinement.css` ou similares. Alte
 - `server/api/`: rotas fonte.
 - `server/lib/`: billing e integrações compartilhadas.
 - `api/`: wrappers versionados gerados; nunca editar manualmente.
-- `contracts/billing-v1.js`: contrato que deve permanecer com o mesmo fingerprint dos outros sistemas.
+- `contracts/billing-v1.js`: fonte canônica do billing compartilhado.
+- `contracts/subscription-management-v1.js`: fonte canônica da gestão de assinatura compartilhada.
+- `package.json#exports`: superfície pública do pacote `@fluxo-juridico/contracts`; consumidores devem fixar um SHA imutável.
 
 ## Antes de integrar
 
