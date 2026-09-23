@@ -12,7 +12,12 @@
     "check": "node scripts/check-architecture.mjs",
     "predeploy": "node scripts/predeploy-check.mjs",
     "test": "node --test tests/*.test.mjs",
-    "verify": "npm test && npm run check"
+    "verify": "npm test && npm run check && npm run check:static",
+    "lint": "eslint contracts server scripts tests site.js eslint.config.js",
+    "format": "prettier --write package.json eslint.config.js .prettierrc.json docs/engineering-standard.md contracts/engineering-v1.js contracts/acquisition-v1.js",
+    "format:check": "prettier --check package.json eslint.config.js .prettierrc.json docs/engineering-standard.md contracts/engineering-v1.js contracts/acquisition-v1.js",
+    "check:static": "npm run lint && npm run format:check",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fluxo-juridico/runtime": "file:./platform/runtime",
@@ -23,6 +28,13 @@
   ],
   "exports": {
     "./billing-v1": "./contracts/billing-v1.js",
-    "./subscription-management-v1": "./contracts/subscription-management-v1.js"
+    "./subscription-management-v1": "./contracts/subscription-management-v1.js",
+    "./engineering-v1": "./contracts/engineering-v1.js",
+    "./acquisition-v1": "./contracts/acquisition-v1.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "eslint": "9.35.0",
+    "prettier": "3.6.2"
   }
 }
