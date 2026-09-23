@@ -11,11 +11,15 @@ function clientIp(req) {
 }
 
 function normalized(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function fingerprint(value) {
-  return createHash("sha256").update(String(value || "")).digest("hex");
+  return createHash("sha256")
+    .update(String(value || ""))
+    .digest("hex");
 }
 
 export function rateLimitSubject(req, extra = "") {
@@ -28,19 +32,15 @@ export async function enforcePublicRateLimit(
   res,
   { scope, limit, windowSeconds, subject = "" } = {}
 ) {
-  const safeScope = String(scope || "").trim().slice(0, 80);
+  const safeScope = String(scope || "")
+    .trim()
+    .slice(0, 80);
   const max = Math.max(1, Math.min(10000, Number(limit) || 1));
   const window = Math.max(1, Math.min(86400, Number(windowSeconds) || 60));
   const safeSubject = rateLimitSubject(req, subject).slice(0, 220);
 
   if (!safeScope) {
-    apiError(
-      req,
-      res,
-      500,
-      "Limite de requisição inválido.",
-      "rate_limit_configuration"
-    );
+    apiError(req, res, 500, "Limite de requisição inválido.", "rate_limit_configuration");
     return false;
   }
 
