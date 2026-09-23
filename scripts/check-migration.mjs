@@ -20,6 +20,8 @@ const requiredFiles = [
   "scripts/generate-api-wrappers.mjs",
   "scripts/predeploy-check.mjs",
   "supabase/README.md",
+  "docs/maintenance.md",
+  "sales-theme.css",
   "vercel.json"
 ];
 
@@ -27,7 +29,7 @@ for (const file of requiredFiles) {
   if (!await exists(file)) errors.push(`Arquivo obrigatório ausente: ${file}`);
 }
 
-for (const legacyPath of ["archive", ".vercel-redeploy", "MIGRATION_STATUS.md"]) {
+for (const legacyPath of ["archive", ".vercel-redeploy", "sales-refinement.css", "MIGRATION_STATUS.md"]) {
   if (await exists(legacyPath)) errors.push(`Artefato legado não pode permanecer no repositório ativo: ${legacyPath}`);
 }
 if (await exists("supabase/migrations")) errors.push("O Vendas não deve possuir migrations SQL; o SaaS principal é o único dono do schema.");
@@ -81,6 +83,17 @@ async function walk(root) {
 
 const serverApiFiles = (await walk("server/api")).filter(file => /\.js$/i.test(file));
 if (!serverApiFiles.length) errors.push("Nenhuma rota fonte encontrada em server/api.");
+
+const maintenanceBudgets = {
+  "index.html": 35000,
+  "site.js": 25000,
+  "site.css": 60000,
+  "sales-theme.css": 40000
+};
+for (const [file,maxBytes] of Object.entries(maintenanceBudgets)) {
+  const info = await fs.stat(file).catch(() => null);
+  if (info && info.size > maxBytes) errors.push(`Arquivo acima do orçamento de manutenção: ${file} (${info.size} > ${maxBytes} bytes)`);
+}
 
 const activeFiles = [
   ...await walk("server"),
