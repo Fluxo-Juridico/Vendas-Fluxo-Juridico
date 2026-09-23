@@ -28,7 +28,9 @@ test("approved provider state enters the signed SaaS provisioning bridge", () =>
 
 test("Mercado Pago simulator probe is acknowledged only after signature validation", () => {
   const verifyIndex = webhook.indexOf("verifyHmac");
-  const probeIndex = webhook.search(/isSignedSimulatorProbe\\(\\{\\s*body:\\s*req\\.body,\\s*dataId\\s*\\}\\)/);
+  const probeIndex = webhook.search(
+    /isSignedSimulatorProbe\\(\\{\\s*body:\\s*req\\.body,\\s*dataId\\s*\\}\\)/
+  );
   assert.ok(verifyIndex >= 0);
   assert.ok(probeIndex > verifyIndex);
   assert.match(webhook, /simulated\\s*:\\s*true/);

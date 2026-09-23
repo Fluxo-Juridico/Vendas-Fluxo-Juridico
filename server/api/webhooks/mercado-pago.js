@@ -307,8 +307,7 @@ export default async function (req, res) {
         else paymentRejection(order, payment, validation, eventType);
       }
     } else if (eventType === "subscription_preapproval") {
-
-    /* Subscription created/updated from a preapproval plan checkout. */
+      /* Subscription created/updated from a preapproval plan checkout. */
       const subscription = await mpFetch("/preapproval/" + encodeURIComponent(resourceId));
 
       const order =
@@ -355,8 +354,7 @@ export default async function (req, res) {
         }
       }
     } else if (eventType === "subscription_authorized_payment") {
-
-    /* Recurring charge authorized by an existing subscription. */
+      /* Recurring charge authorized by an existing subscription. */
       const invoice = await mpFetch("/authorized_payments/" + encodeURIComponent(resourceId));
 
       const summarizedPayment = invoice.payment || {};
@@ -390,8 +388,7 @@ export default async function (req, res) {
         else paymentRejection(order, authoritativePayment, validation, eventType);
       }
     } else {
-
-    /* Unknown provider events are still retained for audit/debugging. */
+      /* Unknown provider events are still retained for audit/debugging. */
       await recordEvent({
         providerEventId,
         eventType,
