@@ -4,7 +4,10 @@ Site comercial e camada de aquisição/cobrança do Fluxo Jurídico.
 
 ## Estrutura atual
 
-- `index.html`, `site.js`, `site.css` e `motion.css`: interface comercial fonte.
+- `index.html` e `site.js`: estrutura e comportamento da interface comercial.
+- `site.css`: layout e componentes estruturais.
+- `motion.css`: animações e transições.
+- `sales-theme.css`: tema comercial canônico, tipografia e refinamentos responsivos.
 - `server/api/`: checkout, consulta de pagamento, webhook, CRM interno e jobs.
 - `server/lib/`: domínio de billing, Mercado Pago e provisionamento.
 - `api/`: wrappers serverless **versionados**, gerados a partir de `server/api/`; são artefatos de deploy e não devem ser editados manualmente.
@@ -76,6 +79,8 @@ Preços, usuários e armazenamento podem ser configurados pelas variáveis docum
 - `npm run check`: valida arquitetura, sintaxe, segredos, billing, catálogo de planos e ausência de legado.
 - `npm run build`: gera os wrappers de `api/` e os arquivos públicos temporários sem versioná-los.
 - `npm run predeploy`: valida a configuração necessária para publicar.
+
+Veja também `docs/maintenance.md` para regras de ownership, limpeza e publicação.
 
 ## Fluxo entre sistemas
 
