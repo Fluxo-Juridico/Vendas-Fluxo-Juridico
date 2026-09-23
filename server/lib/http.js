@@ -79,6 +79,35 @@ export function wrapHandler(handler, { service = "api" } = {}) {
   if (typeof handler !== "function") throw new TypeError("API handler inválido.");
   return async function wrappedHandler(req, res) {
     prepareHttp(req, res);
+    const startedAt = Date.now();
+    const method = String(req.method || "");
+    const path = String(req.url || "")
+      .split("?")[0]
+      .slice(0, 300);
+    console.info(
+      JSON.stringify({
+        level: "info",
+        event: "api_request_start",
+        service: String(service || "api").slice(0, 80),
+        requestId: req.requestId || "",
+        method,
+        path
+      })
+    );
+    res.once?.("finish", () => {
+      console.info(
+        JSON.stringify({
+          level: "info",
+          event: "api_request_complete",
+          service: String(service || "api").slice(0, 80),
+          requestId: req.requestId || "",
+          method,
+          path,
+          statusCode: Number(res.statusCode) || 0,
+          durationMs: Date.now() - startedAt
+        })
+      );
+    });
     try {
       return await handler(req, res);
     } catch (error) {

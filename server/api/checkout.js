@@ -16,6 +16,8 @@ import {
   mpFetch,
   upsertLeadForCheckout
 } from "../lib/billing.js";
+import { enforcePublicRateLimit } from "../lib/rate-limit.js";
+import { TERMS_VERSION, PRIVACY_VERSION, acceptedLegalTerms } from "../lib/legal.js";
 
 export const access = "public";
 export const methods = ["POST"];
@@ -31,12 +33,22 @@ export const methods = ["POST"];
  */
 export default async function (req, res) {
   if (!allowMethods(req, res, methods)) return;
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-checkout-ip",
+      limit: 30,
+      windowSeconds: 3600
+    }))
+  )
+    return;
+
   const plan = clean(req.body?.plan, 40);
   const name = clean(req.body?.name, 180);
   const email = emailOf(req.body?.email);
   const cpf = digits(req.body?.cpf);
   const firmName = clean(req.body?.firmName, 180);
   const phone = clean(req.body?.phone, 60);
+  const legalAccepted = acceptedLegalTerms(req.body?.acceptTerms);
 
   /* Request validation before any order/provider side effect. */
   if (!ALLOWED_PLANS.has(plan)) {
@@ -51,6 +63,20 @@ export default async function (req, res) {
   if (!validCPF(cpf)) {
     return res.status(400).json({ error: "Informe um CPF válido." });
   }
+  if (!legalAccepted) {
+    return res.status(400).json({
+      error: "Confirme a leitura e o aceite dos Termos de Uso e da Política de Privacidade."
+    });
+  }
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-checkout-email",
+      limit: 8,
+      windowSeconds: 3600,
+      subject: email
+    }))
+  )
+    return;
 
   const cfg = await settings();
   const amount = Number(cfg.prices[plan]) || 0;
@@ -84,6 +110,10 @@ export default async function (req, res) {
   ).rows[0];
 
   if (recent?.checkout_url) {
+    await db.query(
+      "UPDATE sales_orders SET terms_version=$2,privacy_version=$3,terms_accepted_at=now(),updated_at=now() WHERE id=$1",
+      [recent.id, TERMS_VERSION, PRIVACY_VERSION]
+    );
     return res.json({
       ok: true,
       reused: true,
@@ -116,8 +146,9 @@ export default async function (req, res) {
       `INSERT INTO sales_orders (
         id,lead_id,plan,billing_cycle,amount_cents,
         billing_contract_version,seat_limit,storage_limit_gb,
-        buyer_name,buyer_email,cpf_masked,cpf_last4,firm_name,phone,payment_status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'created')`,
+        buyer_name,buyer_email,cpf_masked,cpf_last4,firm_name,phone,payment_status,
+        terms_version,privacy_version,terms_accepted_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'created',$15,$16,now())`,
       [
         orderId,
         leadId,
@@ -132,7 +163,9 @@ export default async function (req, res) {
         maskCPF(cpf),
         cpf.slice(-4),
         firmName,
-        phone
+        phone,
+        TERMS_VERSION,
+        PRIVACY_VERSION
       ]
     );
 
@@ -194,7 +227,9 @@ export default async function (req, res) {
       contractVersion: BILLING_CONTRACT_VERSION,
       contractFingerprint: BILLING_CONTRACT_FINGERPRINT,
       seatLimit,
-      storageLimitGb
+      storageLimitGb,
+      termsVersion: TERMS_VERSION,
+      privacyVersion: PRIVACY_VERSION
     });
   } catch (error) {
     const internalMessage = clean(error?.message || error, 500);

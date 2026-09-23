@@ -1,5 +1,6 @@
 import { allowMethods } from "../lib/http.js";
 import { db } from "@fluxo-juridico/runtime";
+import { enforcePublicRateLimit } from "../lib/rate-limit.js";
 
 export const access = "public";
 export const methods = ["POST"];
@@ -16,6 +17,15 @@ const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
  */
 export default async function (req, res) {
   if (!allowMethods(req, res, methods)) return;
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-leads-ip",
+      limit: 30,
+      windowSeconds: 3600
+    }))
+  )
+    return;
+
   const honeypot = clean(req.body?.website, 100);
   if (honeypot) return res.json({ ok: true });
 
@@ -28,6 +38,15 @@ export default async function (req, res) {
   if (!validEmail(email)) {
     return res.status(400).json({ error: "Informe um e-mail válido." });
   }
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-leads-email",
+      limit: 10,
+      windowSeconds: 3600,
+      subject: email
+    }))
+  )
+    return;
 
   const attribution = {
     utm_source: clean(req.body?.utmSource, 120),

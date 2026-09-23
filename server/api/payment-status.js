@@ -1,5 +1,6 @@
 import { allowMethods } from "../lib/http.js";
 import { db } from "@fluxo-juridico/runtime";
+import { enforcePublicRateLimit } from "../lib/rate-limit.js";
 
 export const access = "public";
 export const methods = ["GET"];
@@ -10,11 +11,29 @@ export const methods = ["GET"];
  */
 export default async function (req, res) {
   if (!allowMethods(req, res, methods)) return;
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-payment-status-ip",
+      limit: 300,
+      windowSeconds: 300
+    }))
+  )
+    return;
+
   const orderId = String(req.query?.order || "");
 
   if (!/^[0-9a-f-]{36}$/i.test(orderId)) {
     return res.status(400).json({ error: "Pedido inválido." });
   }
+  if (
+    !(await enforcePublicRateLimit(req, res, {
+      scope: "sales-payment-status-order",
+      limit: 60,
+      windowSeconds: 300,
+      subject: orderId
+    }))
+  )
+    return;
 
   const { rows } = await db.query(
     `SELECT
