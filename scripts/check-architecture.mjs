@@ -33,6 +33,7 @@ const requiredFiles = [
   "scripts/predeploy-check.mjs",
   "supabase/README.md",
   "docs/maintenance.md",
+  "docs/architecture-freeze.md",
   "sales-theme.css",
   "vercel.json"
 ];
