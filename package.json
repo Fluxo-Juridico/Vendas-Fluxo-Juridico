@@ -18,7 +18,8 @@
     "format:check": "prettier --check package.json eslint.config.js .prettierrc.json \"docs/**/*.md\" \"contracts/**/*.js\" \"server/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\" site.js",
     "check:static": "npm run lint && npm run format:check && npm run check:maintainability",
     "test:e2e": "playwright test",
-    "check:maintainability": "node scripts/check-maintainability.mjs"
+    "check:maintainability": "node scripts/check-maintainability.mjs",
+    "smoke:production": "node scripts/smoke-production.mjs"
   },
   "dependencies": {
     "@fluxo-juridico/runtime": "file:./platform/runtime",
