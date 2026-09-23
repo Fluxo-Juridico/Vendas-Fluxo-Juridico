@@ -28,6 +28,14 @@ jobs:
         run: npm install --ignore-scripts
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+      - name: Diagnose production static routes
+        shell: bash
+        run: |
+          for path in /termos.html /termos /privacidade.html /privacidade /site.css /sales-theme.css; do
+            code=$(curl -L -sS -o /tmp/fluxo-route -w "%{http_code}" "https://vendas-lilac.vercel.app$path")
+            bytes=$(wc -c < /tmp/fluxo-route)
+            echo "$path status=$code bytes=$bytes"
+          done
       - name: Run automated tests
         run: npm test
       - name: Static analysis and canonical formatting
