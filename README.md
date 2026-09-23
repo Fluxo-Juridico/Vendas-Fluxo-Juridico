@@ -107,3 +107,4 @@ Este repositório é a **fonte canônica** dos contratos entre Vendas, Administr
 Os consumidores instalam este repositório público sob o alias `@fluxo-juridico/contracts` e fixam um **SHA imutável**. Alterar `main` aqui não muda silenciosamente os consumidores; a adoção de uma nova versão exige atualização deliberada do SHA em cada aplicativo.
 
 `contracts/billing-v1.js` é imutável enquanto a versão for `billing-v1`. Mudanças incompatíveis exigem um novo contrato/versionamento.
+
