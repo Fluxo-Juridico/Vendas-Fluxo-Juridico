@@ -46,3 +46,8 @@ Somente `main` gera deploy automático. Um release só está concluído quando o
 O contrato `engineering-v1` é comum ao Vendas, Principal e Administrativo. O CI aplica ESLint de segurança/análise estática e o formatter canônico. Mudanças em integração ou aquisição devem usar `@fluxo-juridico/contracts` e preservar a sequência definida em `acquisition-v1`.
 
 O browser E2E cobre a contratação visível: escolha de plano → dados do checkout → retorno de pagamento aprovado → provisionamento ativado → link de primeiro acesso.
+
+
+## Baseline congelada
+
+As fronteiras estruturais do site de Vendas estão registradas em `docs/architecture-freeze.md`. O Vendas permanece proprietário da aquisição, billing público e contratos compartilhados; não recebe schema, regras jurídicas ou Auth do produto.
