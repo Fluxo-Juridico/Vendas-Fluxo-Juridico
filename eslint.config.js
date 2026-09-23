@@ -9,7 +9,7 @@ const browserGlobals={
 const nodeGlobals={
   process:"readonly",Buffer:"readonly",console:"readonly",crypto:"readonly",fetch:"readonly",
   URL:"readonly",URLSearchParams:"readonly",TextEncoder:"readonly",TextDecoder:"readonly",
-  AbortController:"readonly",setTimeout:"readonly",clearTimeout:"readonly",
+  AbortController:"readonly",AbortSignal:"readonly",setTimeout:"readonly",clearTimeout:"readonly",
   setInterval:"readonly",clearInterval:"readonly",structuredClone:"readonly"
 };
 
