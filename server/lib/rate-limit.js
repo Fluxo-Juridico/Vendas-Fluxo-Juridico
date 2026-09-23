@@ -6,11 +6,12 @@ function clientIp(req) {
   const forwarded = String(req.headers?.["x-forwarded-for"] || "")
     .split(",")[0]
     .trim();
-  return (
-    forwarded ||
-    String(req.headers?.["x-real-ip"] || "").trim() ||
-    "unknown"
-  );
+  const direct = String(req.headers?.["x-real-ip"] || "").trim();
+  return forwarded || direct || "unknown";
+}
+
+function normalized(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
 function fingerprint(value) {
@@ -18,9 +19,8 @@ function fingerprint(value) {
 }
 
 export function rateLimitSubject(req, extra = "") {
-  return fingerprint(
-    [clientIp(req), String(extra || "").trim().toLowerCase()].join("|")
-  );
+  const raw = [clientIp(req), normalized(extra)].join("|");
+  return fingerprint(raw);
 }
 
 export async function enforcePublicRateLimit(
@@ -51,10 +51,8 @@ export async function enforcePublicRateLimit(
 
   const count = Number(rows[0]?.request_count) || 0;
   const startedAt = new Date(rows[0]?.window_started_at || Date.now()).getTime();
-  const retryAfter = Math.max(
-    1,
-    Math.ceil((startedAt + window * 1000 - Date.now()) / 1000)
-  );
+  const expiresAt = startedAt + window * 1000;
+  const retryAfter = Math.max(1, Math.ceil((expiresAt - Date.now()) / 1000));
 
   if (count > max) {
     res.setHeader("Retry-After", String(retryAfter));
