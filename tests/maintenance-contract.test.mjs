@@ -47,3 +47,11 @@ test("canonical contracts are exported as a minimal installable package", () => 
   assert.equal(existsSync(new URL("../contracts/engineering-v1.js", import.meta.url)), true);
   assert.equal(existsSync(new URL("../contracts/acquisition-v1.js", import.meta.url)), true);
 });
+
+test("API observability keeps raw exception details out of logs", () => {
+  const http = readFileSync(new URL("../server/lib/http.js", import.meta.url), "utf8");
+  assert.doesNotMatch(http, /api_request_start|api_unhandled_error|errorName|Unhandled API error/);
+  assert.doesNotMatch(http, /error\?\.message/);
+  assert.match(http, /statusCode:/);
+  assert.match(http, /durationMs:/);
+});
