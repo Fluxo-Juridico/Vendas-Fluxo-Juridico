@@ -17,7 +17,7 @@ test("checkout persists a provider plan before sending the buyer away", () => {
 });
 
 test("approved provider state enters the signed SaaS provisioning bridge", () => {
-  assert.match(webhook, /status==="approved"/);
+  assert.match(webhook, /status\\s*===\\s*["\']approved["\']/);
   assert.match(webhook, /await tryProvision\(fresh\)/);
   assert.match(billing, /canonicalBillingSignature/);
   assert.match(billing, /X-Billing-Signature/);
@@ -28,8 +28,8 @@ test("approved provider state enters the signed SaaS provisioning bridge", () =>
 
 test("Mercado Pago simulator probe is acknowledged only after signature validation", () => {
   const verifyIndex = webhook.indexOf("verifyHmac");
-  const probeIndex = webhook.indexOf("isSignedSimulatorProbe({body:req.body,dataId})");
+  const probeIndex = webhook.search(/isSignedSimulatorProbe\\(\\{\\s*body:\\s*req\\.body,\\s*dataId\\s*\\}\\)/);
   assert.ok(verifyIndex >= 0);
   assert.ok(probeIndex > verifyIndex);
-  assert.match(webhook, /simulated:true/);
+  assert.match(webhook, /simulated\\s*:\\s*true/);
 });
