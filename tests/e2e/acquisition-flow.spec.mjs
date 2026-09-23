@@ -63,6 +63,7 @@ test("Vendas → checkout → billing confirmado → provisionamento → primeir
   await page.locator('#checkoutForm [name="email"]').fill(fixture.buyer.email);
   await page.locator('#checkoutForm [name="phone"]').fill(fixture.buyer.phone);
   await page.locator('#checkoutForm [name="firmName"]').fill(fixture.buyer.firmName);
+  await page.locator('#checkoutForm [name="acceptTerms"]').check();
   await page.locator('#checkoutForm button[type="submit"]').click();
 
   await expect(page.locator("#checkoutResult")).toContainText(
@@ -75,7 +76,8 @@ test("Vendas → checkout → billing confirmado → provisionamento → primeir
     plan: fixture.plan,
     name: fixture.buyer.name,
     email: fixture.buyer.email,
-    firmName: fixture.buyer.firmName
+    firmName: fixture.buyer.firmName,
+    acceptTerms: "on"
   });
   expect(String(checkoutPayload.cpf).replace(/\D/g, "")).toBe(fixture.buyer.cpf);
   expect(paymentStatusReads).toBeGreaterThan(0);
