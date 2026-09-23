@@ -28,6 +28,30 @@ jobs:
         run: npm install --ignore-scripts
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+      - name: Diagnose deployed legal functions
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const paths = ["/api/terms", "/api/privacy", "/termos.html", "/privacidade.html"];
+          for (const path of paths) {
+            try {
+              const response = await fetch("https://vendas-lilac.vercel.app" + path, {
+                redirect: "manual",
+                headers: { "user-agent": "fluxo-juridico-route-diagnostic/2.0" }
+              });
+              const text = await response.text();
+              console.log(JSON.stringify({
+                path,
+                status: response.status,
+                location: response.headers.get("location"),
+                type: response.headers.get("content-type"),
+                body: text.slice(0, 180).replace(/\\s+/g, " ")
+              }));
+            } catch (error) {
+              console.log(JSON.stringify({ path, error: String(error?.message || error) }));
+            }
+          }
+          NODE
       - name: Run automated tests
         run: npm test
       - name: Static analysis and canonical formatting
