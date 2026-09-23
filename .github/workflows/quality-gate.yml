@@ -28,6 +28,12 @@ jobs:
         run: npm install --ignore-scripts
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+      - name: Show canonical live-homologation formatting
+        shell: bash
+        run: |
+          npx prettier --write scripts/live-acquisition-homologation.mjs
+          git diff -- scripts/live-acquisition-homologation.mjs
+          exit 1
       - name: Run automated tests
         run: npm test
       - name: Static analysis and canonical formatting
