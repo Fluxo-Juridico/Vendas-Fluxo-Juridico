@@ -14,6 +14,7 @@ const requiredFiles = [
   "platform/runtime/package.json",
   "platform/runtime/index.js",
   "contracts/billing-v1.js",
+  "contracts/subscription-management-v1.js",
   "server/lib/http.js",
   "tests/http-contract.test.mjs",
   "server/lib/billing.js",
@@ -45,6 +46,9 @@ if (!await exists("api")) errors.push("Diretório de adaptadores versionados aus
 
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
 if (pkg?.scripts?.verify !== "npm test && npm run check") errors.push("package.json deve expor verify como testes + auditoria estrutural.");
+if (JSON.stringify(pkg.files)!==JSON.stringify(["contracts"])) errors.push("Pacote compartilhado deve publicar somente contracts/.");
+const expectedContractExports={"./billing-v1":"./contracts/billing-v1.js","./subscription-management-v1":"./contracts/subscription-management-v1.js"};
+if (JSON.stringify(pkg.exports)!==JSON.stringify(expectedContractExports)) errors.push("package.json não expõe os exports canônicos de contratos.");
 const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
 if (runtimeDep !== "file:./platform/runtime") {
   errors.push("A dependência @fluxo-juridico/runtime deve apontar para file:./platform/runtime.");
