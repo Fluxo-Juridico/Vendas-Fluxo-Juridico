@@ -3,6 +3,19 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 let sqlClient;
 
+const DATABASE_SEARCH_PATH = "public,billing,sales,admin,private";
+function withDatabaseSearchPath(connectionString) {
+  try {
+    const url = new URL(String(connectionString || ""));
+    const existing = String(url.searchParams.get("options") || "").trim();
+    const option = `-c search_path=${DATABASE_SEARCH_PATH}`;
+    url.searchParams.set("options", existing ? `${existing} ${option}` : option);
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
 function readEnv(key) {
   const normalized = String(key || "").replace(/[^a-zA-Z0-9]+/g, "_").toUpperCase();
   const raw = process.env[key] ?? process.env[normalized];
@@ -16,7 +29,7 @@ function getSql() {
   if (sqlClient) return sqlClient;
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.SUPABASE_DB_URL;
   if (!url) throw new Error("DATABASE_URL não configurada.");
-  sqlClient = postgres(url, {
+  sqlClient = postgres(withDatabaseSearchPath(url), {
     max: 3,
     ssl: "require",
     prepare: false,
