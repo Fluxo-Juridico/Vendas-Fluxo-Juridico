@@ -30,6 +30,7 @@ const requiredFiles = [
   "tests/http-contract.test.mjs",
   "server/lib/billing.js",
   "scripts/generate-api-wrappers.mjs",
+  "scripts/check-maintainability.mjs",
   "scripts/predeploy-check.mjs",
   "supabase/README.md",
   "docs/maintenance.md",
@@ -58,7 +59,7 @@ if (!await exists("api")) errors.push("Diretório de adaptadores versionados aus
 
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
 if (pkg?.scripts?.verify !== "npm test && npm run check && npm run check:static") errors.push("package.json deve expor verify com testes, auditoria estrutural e análise estática.");
-for (const script of ["lint","format","format:check","check:static","test:e2e"]) {
+for (const script of ["lint","format","format:check","check:maintainability","check:static","test:e2e"]) {
   if (!pkg?.scripts?.[script]) errors.push(`Script de engenharia ausente: ${script}`);
 }
 for (const script of REQUIRED_ENGINEERING_SCRIPTS) {
