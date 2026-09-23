@@ -42,12 +42,18 @@ if (!gitignoreEntries.includes("public/")) errors.push("public/ continua sendo a
 if (!await exists("api")) errors.push("Diretório de adaptadores versionados ausente: api/");
 
 const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+if (pkg?.scripts?.verify !== "npm test && npm run check") errors.push("package.json deve expor verify como testes + auditoria estrutural.");
 const runtimeDep = pkg?.dependencies?.["@fluxo-juridico/runtime"];
 if (runtimeDep !== "file:./platform/runtime") {
   errors.push("A dependência @fluxo-juridico/runtime deve apontar para file:./platform/runtime.");
 }
 if (pkg?.scripts?.build !== "node scripts/generate-api-wrappers.mjs") {
   errors.push("O build deve gerar somente os wrappers de api/ a partir de server/api.");
+}
+
+const vercelConfig = JSON.parse(await fs.readFile("vercel.json","utf8").catch(()=> "{}"));
+if (vercelConfig?.git?.deploymentEnabled?.["*"] !== false || vercelConfig?.git?.deploymentEnabled?.main !== true) {
+  errors.push("Vercel deve publicar automaticamente somente a branch main.");
 }
 
 const envExample = await fs.readFile(".env.example", "utf8").catch(() => "");
