@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  statuses: read
 
 concurrency:
   group: production-smoke
@@ -28,8 +29,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - name: Verify Vercel deployment status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: node scripts/check-vercel-deployment.mjs
       - name: Verify deployed release
         env:
           PRODUCTION_BASE_URL: https://vendas-lilac.vercel.app
-          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: npm run smoke:production
