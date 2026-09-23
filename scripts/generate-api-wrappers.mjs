@@ -5,13 +5,13 @@ const serverRoot = path.resolve("server/api");
 const targetRoot = path.resolve("api");
 const publicRoot = path.resolve("public");
 const httpModule = path.resolve("server/lib/http.js");
-const publicFiles = ["index.html","site.css","motion.css","site.js"];
+const publicFiles = ["index.html", "site.css", "motion.css", "site.js"];
 
 async function walk(dir) {
   const out = [];
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...await walk(full));
+    if (entry.isDirectory()) out.push(...(await walk(full)));
     else if (entry.isFile() && entry.name.endsWith(".js")) out.push(full);
   }
   return out;
@@ -34,7 +34,8 @@ for (const source of files) {
   await fs.mkdir(path.dirname(target), { recursive: true });
 
   const importPath = "./" + path.relative(path.dirname(target), source).replaceAll(path.sep, "/");
-  const httpImportPath = "./" + path.relative(path.dirname(target), httpModule).replaceAll(path.sep, "/");
+  const httpImportPath =
+    "./" + path.relative(path.dirname(target), httpModule).replaceAll(path.sep, "/");
   const wrapper =
     `import handler from ${JSON.stringify(importPath)};\n` +
     `import {wrapHandler} from ${JSON.stringify(httpImportPath)};\n` +
@@ -44,4 +45,6 @@ for (const source of files) {
   await fs.writeFile(target, wrapper);
 }
 
-console.log(`Generated ${files.length} guarded API wrapper(s) and ${publicFiles.length} public asset(s).`);
+console.log(
+  `Generated ${files.length} guarded API wrapper(s) and ${publicFiles.length} public asset(s).`
+);
