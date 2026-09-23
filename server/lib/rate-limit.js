@@ -6,7 +6,11 @@ function clientIp(req) {
   const forwarded = String(req.headers?.["x-forwarded-for"] || "")
     .split(",")[0]
     .trim();
-  return forwarded || String(req.headers?.["x-real-ip"] || "").trim() || "unknown";
+  return (
+    forwarded ||
+    String(req.headers?.["x-real-ip"] || "").trim() ||
+    "unknown"
+  );
 }
 
 function fingerprint(value) {
@@ -14,7 +18,9 @@ function fingerprint(value) {
 }
 
 export function rateLimitSubject(req, extra = "") {
-  return fingerprint([clientIp(req), String(extra || "").trim().toLowerCase()].join("|"));
+  return fingerprint(
+    [clientIp(req), String(extra || "").trim().toLowerCase()].join("|")
+  );
 }
 
 export async function enforcePublicRateLimit(
@@ -28,7 +34,13 @@ export async function enforcePublicRateLimit(
   const safeSubject = rateLimitSubject(req, subject).slice(0, 220);
 
   if (!safeScope) {
-    apiError(req, res, 500, "Limite de requisição inválido.", "rate_limit_configuration");
+    apiError(
+      req,
+      res,
+      500,
+      "Limite de requisição inválido.",
+      "rate_limit_configuration"
+    );
     return false;
   }
 
@@ -39,7 +51,10 @@ export async function enforcePublicRateLimit(
 
   const count = Number(rows[0]?.request_count) || 0;
   const startedAt = new Date(rows[0]?.window_started_at || Date.now()).getTime();
-  const retryAfter = Math.max(1, Math.ceil((startedAt + window * 1000 - Date.now()) / 1000));
+  const retryAfter = Math.max(
+    1,
+    Math.ceil((startedAt + window * 1000 - Date.now()) / 1000)
+  );
 
   if (count > max) {
     res.setHeader("Retry-After", String(retryAfter));
