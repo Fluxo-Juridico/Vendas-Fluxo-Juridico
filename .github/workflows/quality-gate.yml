@@ -28,12 +28,6 @@ jobs:
         run: npm install --ignore-scripts
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
-      - name: Show canonical test formatting
-        shell: bash
-        run: |
-          npx prettier --write tests/legal-pages.test.mjs
-          git diff -- tests/legal-pages.test.mjs
-          exit 1
       - name: Run automated tests
         run: npm test
       - name: Static analysis and canonical formatting
