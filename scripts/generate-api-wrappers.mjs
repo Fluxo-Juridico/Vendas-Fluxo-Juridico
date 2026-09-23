@@ -5,7 +5,15 @@ const serverRoot = path.resolve("server/api");
 const targetRoot = path.resolve("api");
 const publicRoot = path.resolve("public");
 const httpModule = path.resolve("server/lib/http.js");
-const publicFiles = ["index.html", "site.css", "motion.css", "site.js"];
+const publicFiles = [
+  "index.html",
+  "site.css",
+  "motion.css",
+  "sales-theme.css",
+  "site.js",
+  "termos.html",
+  "privacidade.html"
+];
 
 async function walk(dir) {
   const out = [];
