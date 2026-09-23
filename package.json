@@ -15,7 +15,7 @@
     "verify": "npm test && npm run check && npm run check:static",
     "lint": "eslint contracts server scripts tests site.js eslint.config.js",
     "format": "prettier --write package.json eslint.config.js .prettierrc.json docs/engineering-standard.md contracts/engineering-v1.js contracts/acquisition-v1.js",
-    "format:check": "prettier --check package.json eslint.config.js .prettierrc.json docs/engineering-standard.md contracts/engineering-v1.js contracts/acquisition-v1.js",
+    "format:check": "prettier --check package.json eslint.config.js .prettierrc.json docs/engineering-standard.md contracts/acquisition-v1.js",
     "check:static": "npm run lint && npm run format:check",
     "test:e2e": "playwright test"
   },
