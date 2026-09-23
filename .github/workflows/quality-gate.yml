@@ -1,0 +1,52 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Run automated tests
+        run: npm test
+      - name: Check architecture and integrity
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run check 2>&1 | tee check.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Quality gate"
+            echo '~~~text'
+            cat check.log
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Build deployment wrappers
+        run: npm run build
+      - name: Validate deploy configuration contract
+        run: npm run predeploy
+        env:
+          DATABASE_URL: postgresql://ci:ci@db.example.com:5432/postgres
+          MERCADO_PAGO_ACCESS_TOKEN: APP_USR_ci_placeholder_1234567890
+          MERCADO_PAGO_WEBHOOK_SECRET: webhook_ci_placeholder_1234567890
+          BILLING_BRIDGE_SECRET: billing_bridge_ci_placeholder_1234567890
+          CRON_SECRET: cron_ci_placeholder_12345678901234567890
+          SAAS_BASE_URL: https://saas.example.com
