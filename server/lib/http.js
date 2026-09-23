@@ -81,7 +81,9 @@ export function wrapHandler(handler, { service = "api" } = {}) {
     prepareHttp(req, res);
     const startedAt = Date.now();
     const method = String(req.method || "");
-    const path = String(req.url || "").split("?")[0].slice(0, 300);
+    const path = String(req.url || "")
+      .split("?")[0]
+      .slice(0, 300);
     console.info(
       JSON.stringify({
         level: "info",
