@@ -2,7 +2,10 @@ import postgres from "postgres";
 
 const stage = String(process.env.LIVE_STAGE || "preflight").trim();
 const orderId = String(process.env.LIVE_ORDER_ID || "").trim();
-const base = String(process.env.SALES_BASE_URL || "https://vendas-lilac.vercel.app").replace(/\/$/, "");
+const base = String(process.env.SALES_BASE_URL || "https://vendas-lilac.vercel.app").replace(
+  /\/$/,
+  ""
+);
 const databaseUrl = String(process.env.LIVE_DATABASE_URL || "").trim();
 
 const allowedStages = new Set(["preflight", "order", "provisioned", "first-access"]);
@@ -140,7 +143,8 @@ try {
   if (row.payment_status !== "approved") {
     throw new Error(`Expected approved payment, got ${row.payment_status || "empty"}.`);
   }
-  if (!row.provider_subscription_id) throw new Error("Approved order has no provider subscription id.");
+  if (!row.provider_subscription_id)
+    throw new Error("Approved order has no provider subscription id.");
   if (row.provisioning_status !== "activated") {
     throw new Error(`Expected activated provisioning, got ${row.provisioning_status || "empty"}.`);
   }
@@ -148,9 +152,15 @@ try {
     throw new Error("Billing platform account is not active/provisioned.");
   }
   if (!row.organization_id || !row.auth_user_id || !row.owner_membership) {
-    throw new Error("Provisioning did not create/link organization, Auth identity and Owner membership.");
+    throw new Error(
+      "Provisioning did not create/link organization, Auth identity and Owner membership."
+    );
   }
-  if (!row.subscription_plan || Number(row.seat_limit) <= 0 || Number(row.storage_limit_bytes) <= 0) {
+  if (
+    !row.subscription_plan ||
+    Number(row.seat_limit) <= 0 ||
+    Number(row.storage_limit_bytes) <= 0
+  ) {
     throw new Error("Provisioned organization does not have valid plan entitlements.");
   }
 
