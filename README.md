@@ -91,3 +91,15 @@ Veja também `docs/maintenance.md` para regras de ownership, limpeza e publicaç
 ## Governança do banco
 
 O projeto de Vendas consome o mesmo Postgres/Supabase da plataforma, mas **não é dono do schema**. Toda mudança futura de tabela, índice, policy, função ou trigger deve ser criada e versionada em `Fluxo-Juridico/Fluxo-Juridico/supabase/migrations/`.
+
+
+## Pacote compartilhado de contratos
+
+Este repositório é a **fonte canônica** dos contratos entre Vendas, Administrativo e SaaS principal. O `package.json` exporta apenas:
+
+- `@fluxo-juridico/contracts/billing-v1`
+- `@fluxo-juridico/contracts/subscription-management-v1`
+
+Os consumidores instalam este repositório público sob o alias `@fluxo-juridico/contracts` e fixam um **SHA imutável**. Alterar `main` aqui não muda silenciosamente os consumidores; a adoção de uma nova versão exige atualização deliberada do SHA em cada aplicativo.
+
+`contracts/billing-v1.js` é imutável enquanto a versão for `billing-v1`. Mudanças incompatíveis exigem um novo contrato/versionamento.

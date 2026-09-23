@@ -4,6 +4,7 @@ import {existsSync,readFileSync,statSync} from "node:fs";
 
 const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
 const theme=readFileSync(new URL("../sales-theme.css",import.meta.url),"utf8");
+const pkg=JSON.parse(readFileSync(new URL("../package.json",import.meta.url),"utf8"));
 
 test("sales site loads the canonical stylesheet layers only",()=>{
   assert.match(html,/\/site\.css/);
@@ -23,4 +24,12 @@ test("sales source files stay inside maintenance budgets",()=>{
     const size=statSync(new URL("../"+path,import.meta.url)).size;
     assert.ok(size<=max,`${path} exceeded ${max} bytes (current: ${size})`);
   }
+});
+
+
+test("canonical contracts are exported as a minimal installable package",()=>{
+  assert.deepEqual(pkg.files,["contracts"]);
+  assert.deepEqual(pkg.exports,{"./billing-v1":"./contracts/billing-v1.js","./subscription-management-v1":"./contracts/subscription-management-v1.js"});
+  assert.equal(existsSync(new URL("../contracts/billing-v1.js",import.meta.url)),true);
+  assert.equal(existsSync(new URL("../contracts/subscription-management-v1.js",import.meta.url)),true);
 });

@@ -17,5 +17,12 @@
   "dependencies": {
     "@fluxo-juridico/runtime": "file:./platform/runtime",
     "postgres": "3.4.7"
+  },
+  "files": [
+    "contracts"
+  ],
+  "exports": {
+    "./billing-v1": "./contracts/billing-v1.js",
+    "./subscription-management-v1": "./contracts/subscription-management-v1.js"
   }
 }
