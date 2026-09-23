@@ -5,9 +5,7 @@ import { PRIVACY_HTML, TERMS_HTML } from "../server/lib/legal-pages.js";
 
 const terms = readFileSync(new URL("../termos.html", import.meta.url), "utf8");
 const privacy = readFileSync(new URL("../privacidade.html", import.meta.url), "utf8");
-const vercel = JSON.parse(
-  readFileSync(new URL("../vercel.json", import.meta.url), "utf8")
-);
+const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
 
 test("bundled legal pages stay byte-identical to canonical HTML", () => {
   assert.equal(TERMS_HTML, terms);
