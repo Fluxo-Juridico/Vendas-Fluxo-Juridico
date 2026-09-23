@@ -29,7 +29,14 @@ test("sales source files stay inside maintenance budgets",()=>{
 
 test("canonical contracts are exported as a minimal installable package",()=>{
   assert.deepEqual(pkg.files,["contracts"]);
-  assert.deepEqual(pkg.exports,{"./billing-v1":"./contracts/billing-v1.js","./subscription-management-v1":"./contracts/subscription-management-v1.js"});
+  assert.deepEqual(pkg.exports,{
+    "./billing-v1":"./contracts/billing-v1.js",
+    "./subscription-management-v1":"./contracts/subscription-management-v1.js",
+    "./engineering-v1":"./contracts/engineering-v1.js",
+    "./acquisition-v1":"./contracts/acquisition-v1.js"
+  });
   assert.equal(existsSync(new URL("../contracts/billing-v1.js",import.meta.url)),true);
   assert.equal(existsSync(new URL("../contracts/subscription-management-v1.js",import.meta.url)),true);
+  assert.equal(existsSync(new URL("../contracts/engineering-v1.js",import.meta.url)),true);
+  assert.equal(existsSync(new URL("../contracts/acquisition-v1.js",import.meta.url)),true);
 });
