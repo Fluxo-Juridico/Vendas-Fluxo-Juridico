@@ -42,19 +42,19 @@
   "rewrites": [
     {
       "source": "/termos.html",
-      "destination": "/api/terms"
+      "destination": "/api/legal?document=terms"
     },
     {
       "source": "/termos",
-      "destination": "/api/terms"
+      "destination": "/api/legal?document=terms"
     },
     {
       "source": "/privacidade.html",
-      "destination": "/api/privacy"
+      "destination": "/api/legal?document=privacy"
     },
     {
       "source": "/privacidade",
-      "destination": "/api/privacy"
+      "destination": "/api/legal?document=privacy"
     }
   ]
 }
