@@ -43,9 +43,9 @@ test("automação de pagamento é conservadora", () => {
 test("configuração de produção não altera o contrato billing-v1", () => {
   const source = fs.readFileSync(new URL("../server/lib/billing.js", import.meta.url), "utf8");
   assert.equal(source.includes('config.get("plan_'), false);
-  assert.match(source, /prices:fromCatalog\("price"\)/);
-  assert.match(source, /seats:fromCatalog\("seats"\)/);
-  assert.match(source, /storageGb:fromCatalog\("storageGb"\)/);
+  assert.match(source, /prices:\s*fromCatalog\("price"\)/);
+  assert.match(source, /seats:\s*fromCatalog\("seats"\)/);
+  assert.match(source, /storageGb:\s*fromCatalog\("storageGb"\)/);
 });
 
 test("pagamento autorizado precisa corresponder integralmente ao pedido", () => {
