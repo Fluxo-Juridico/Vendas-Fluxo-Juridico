@@ -6,9 +6,13 @@ export const methods = ["GET"];
 
 export default async function (req, res) {
   if (!allowMethods(req, res, methods)) return;
-  const document = String(req.query?.document || "").trim().toLowerCase();
-  const html =
-    document === "terms" ? TERMS_HTML : document === "privacy" ? PRIVACY_HTML : "";
+
+  const rawDocument = String(req.query?.document || "");
+  const document = rawDocument.trim().toLowerCase();
+  let html = "";
+
+  if (document === "terms") html = TERMS_HTML;
+  if (document === "privacy") html = PRIVACY_HTML;
 
   if (!html) {
     return res.status(404).json({ error: "Documento legal não encontrado." });
