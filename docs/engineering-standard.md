@@ -21,6 +21,14 @@ Uma regra de negócio deve ter um único proprietário. Integrações entre repo
 - Dados volumosos ficam em arquivos de dados ou storage, não embutidos em módulos de execução.
 - Segredos nunca são versionados.
 
+## Nomenclatura e comentários
+
+- Código canônico usa arquivos em `kebab-case` e nomes baseados em responsabilidade.
+- Contratos versionados como `billing-v1.js` são exceção deliberada; nomes temporários como `final`, `old`, `copy`, `new-fix` ou `module-7` não são permitidos.
+- Comentários explicam decisões, invariantes e integrações externas; não narram o código linha a linha.
+- `TODO`, `FIXME` e `HACK` exigem uma issue rastreável.
+- `npm run format` cobre código ativo, contratos, configuração e documentação; `npm run check:maintainability` protege nomenclatura e comentários no CI.
+
 ## Qualidade
 
 Toda PR deve passar por:
