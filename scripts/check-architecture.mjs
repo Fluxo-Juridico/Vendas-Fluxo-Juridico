@@ -302,7 +302,6 @@ for (const [label, source, tokens] of [
       "BILLING_CONTRACT_FINGERPRINT",
       "seat_limit",
       "storage_limit_gb",
-      "reused:true",
       "15 minutes"
     ]
   ],
@@ -323,13 +322,16 @@ for (const [label, source, tokens] of [
       errors.push(`Contrato de billing incompleto em ${label}: falta ${token}`);
   }
 }
+if (!/reused\s*:\s*true/.test(checkoutSource)) {
+  errors.push("Contrato de billing incompleto em checkout: falta reused: true");
+}
 
 for (const file of serverApiFiles) {
   const content = await fs.readFile(file, "utf8").catch(() => "");
   if (
-    content.includes("export const methods=") &&
-    !content.includes("allowMethods(req,res,methods)") &&
-    !content.includes("req.method")
+    /export\s+const\s+methods\s*=/.test(content) &&
+    !/allowMethods\s*\(\s*req\s*,\s*res\s*,\s*methods\s*\)/.test(content) &&
+    !/req\.method/.test(content)
   ) {
     errors.push(`Rota com methods sem enforcement HTTP: ${file}`);
   }
