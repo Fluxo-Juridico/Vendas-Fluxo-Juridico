@@ -1,4 +1,4 @@
-name: Migration Integrity
+name: Quality Gate
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  migration-check:
+  quality-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,14 +26,14 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: Run automated tests
         run: npm test
-      - name: Check migration integrity
+      - name: Check architecture and integrity
         shell: bash
         run: |
           set -o pipefail
           npm run check 2>&1 | tee check.log
           status=${PIPESTATUS[0]}
           {
-            echo "### Migration integrity"
+            echo "### Quality gate"
             echo '~~~text'
             cat check.log
             echo '~~~'

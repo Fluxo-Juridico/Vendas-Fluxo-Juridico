@@ -1,7 +1,7 @@
 /* ==========================================================================
-   FLUXO JURÍDICO — SALES FINAL V5
-   Light neutral commercial site with vivid blue/aqua accents.
-   This file is the single visual override layer for the sales site.
+   FLUXO JURÍDICO — CANONICAL SALES THEME
+   Commercial theme, readability and responsive polish.
+   Keep product theme refinements here; structural layout belongs to site.css and motion belongs to motion.css.
    ========================================================================== */
 
 :root{
@@ -748,7 +748,7 @@ summary:focus-visible{
 
 
 /* ==========================================================================
-   SALES V6 — TYPOGRAPHY POLISH
+   TYPOGRAPHY
    Raises only real user-facing copy. Mini product mockups keep their scale.
    ========================================================================== */
 .brand small{font-size:10px!important}
@@ -812,7 +812,7 @@ summary:focus-visible{
 
 
 /* ==========================================================================
-   SALES V7 — PROFESSIONAL COMMERCIAL HIERARCHY
+   COMMERCIAL HIERARCHY
    Inspired by mature legaltech landing-page patterns: stronger hierarchy,
    readable supporting copy, obvious CTAs, restrained surfaces.
    ========================================================================== */
@@ -1033,7 +1033,7 @@ summary:focus-visible{
 
 
 /* ==========================================================================
-   SALES V8 — READABILITY / ACCESSIBILITY PASS
+   READABILITY / ACCESSIBILITY
    Important commercial content must read comfortably at normal desktop zoom.
    Miniature product mockups are intentionally excluded.
    ========================================================================== */

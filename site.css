@@ -2217,8 +2217,8 @@ footer{
 }
 
 /* ==========================================================================
-   FINAL LAYOUT / READABILITY TUNING
-   Consolidated from the former refinement layer.
+   LAYOUT / READABILITY
+   Canonical structural and readability rules.
    ========================================================================== */
 :root{
   --content:1240px;
@@ -3277,8 +3277,8 @@ body{
 }
 
 /* ==========================================================================
-   HERO — final approved state
-   Keeps the heading readable, removes legacy decorative shadows, and leaves
+   HERO — canonical state
+   Keeps the heading readable, avoids decorative shadows, and leaves
    motion responsibilities to motion.css.
    ========================================================================== */
 .hero{
