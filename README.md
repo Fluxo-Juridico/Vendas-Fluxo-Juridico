@@ -7,7 +7,7 @@ Site comercial e camada de aquisição/cobrança do Fluxo Jurídico.
 - `index.html`, `site.js`, `site.css` e `motion.css`: interface comercial fonte.
 - `server/api/`: checkout, consulta de pagamento, webhook, CRM interno e jobs.
 - `server/lib/`: domínio de billing, Mercado Pago e provisionamento.
-- `api/`: artefato gerado durante o build a partir de `server/api/`; não é versionado no Git.
+- `api/`: wrappers serverless **versionados**, gerados a partir de `server/api/`; são artefatos de deploy e não devem ser editados manualmente.
 - `platform/runtime/`: adaptador local de banco, configuração e HMAC.
 - `supabase/README.md`: contrato de banco consumido pelo Vendas. Migrations são mantidas exclusivamente no SaaS principal.
 - `scripts/`: validações de integridade, build e pré-deploy.
@@ -72,6 +72,7 @@ Preços, usuários e armazenamento podem ser configurados pelas variáveis docum
 
 ## Validação
 
+- `npm run verify`: executa testes e a auditoria estrutural local em uma única etapa.
 - `npm run check`: valida arquitetura, sintaxe, segredos, billing, catálogo de planos e ausência de legado.
 - `npm run build`: gera os wrappers de `api/` e os arquivos públicos temporários sem versioná-los.
 - `npm run predeploy`: valida a configuração necessária para publicar.
