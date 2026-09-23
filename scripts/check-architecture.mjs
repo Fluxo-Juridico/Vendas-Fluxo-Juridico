@@ -250,7 +250,14 @@ for (const token of [
 const wrapperSource = await fs
   .readFile("scripts/generate-api-wrappers.mjs", "utf8")
   .catch(() => "");
-for (const token of ["wrapHandler", "httpModule", "internalFiles", "directFiles", "\"[route].js\"", "apiError"]) {
+for (const token of [
+  "wrapHandler",
+  "httpModule",
+  "internalFiles",
+  "directFiles",
+  '"[route].js"',
+  "apiError"
+]) {
   if (!wrapperSource.includes(token))
     errors.push(`Gerador de wrappers/consolidação incompleto: falta ${token}`);
 }
