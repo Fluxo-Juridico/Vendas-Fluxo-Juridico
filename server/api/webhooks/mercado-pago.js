@@ -1,5 +1,5 @@
-import {allowMethods} from "../../lib/http.js";
-import {db,config,webhooks} from "@fluxo-juridico/runtime";
+import { allowMethods } from "../../lib/http.js";
+import { db, config, webhooks } from "@fluxo-juridico/runtime";
 import {
   mpFetch,
   normalizePaymentStatus,
@@ -7,8 +7,8 @@ import {
   tryProvision
 } from "../../lib/billing.js";
 
-export const access="public";
-export const methods=["POST"];
+export const access = "public";
+export const methods = ["POST"];
 
 /**
  * Mercado Pago webhook.
@@ -25,33 +25,36 @@ export const methods=["POST"];
  */
 
 /* --------------------------- Signature helpers -------------------------- */
-export function signatureParts(value){
-  const parts={};
+export function signatureParts(value) {
+  const parts = {};
 
-  for(const item of String(value||"").split(",")){
-    const pieces=item.split("=");
-    const key=pieces.shift();
-    if(key&&pieces.length){
-      parts[key.trim()]=pieces.join("=").trim();
+  for (const item of String(value || "").split(",")) {
+    const pieces = item.split("=");
+    const key = pieces.shift();
+    if (key && pieces.length) {
+      parts[key.trim()] = pieces.join("=").trim();
     }
   }
 
   return parts;
 }
 
-export function signatureManifest({dataId,requestId,timestamp}){
+export function signatureManifest({ dataId, requestId, timestamp }) {
   return (
-    "id:"+String(dataId||"").toLowerCase()+
-    ";request-id:"+String(requestId||"")+
-    ";ts:"+String(timestamp||"")+
+    "id:" +
+    String(dataId || "").toLowerCase() +
+    ";request-id:" +
+    String(requestId || "") +
+    ";ts:" +
+    String(timestamp || "") +
     ";"
   );
 }
 
-export function normalizedTimestamp(value){
-  const raw=Number(value);
-  if(!Number.isFinite(raw))return undefined;
-  return raw>1e11?Math.floor(raw/1000):Math.floor(raw);
+export function normalizedTimestamp(value) {
+  const raw = Number(value);
+  if (!Number.isFinite(raw)) return undefined;
+  return raw > 1e11 ? Math.floor(raw / 1000) : Math.floor(raw);
 }
 
 /**
@@ -60,109 +63,105 @@ export function normalizedTimestamp(value){
  * id does not exist in the provider API, so it must be acknowledged only
  * after its HMAC signature and timestamp have already been validated.
  */
-export function isSignedSimulatorProbe({body,dataId}){
+export function isSignedSimulatorProbe({ body, dataId }) {
   return (
-    String(dataId||"")==="123456"&&
-    String(body?.id||"")==="123456"&&
-    String(body?.data?.id||"")==="123456"&&
-    String(body?.application_id||"")==="6890332303704097"&&
-    String(body?.action||"")==="updated"&&
-    String(body?.entity||"")==="preapproval"&&
-    String(body?.type||"")==="subscription_preapproval"&&
-    Number(body?.version)===8&&
-    String(body?.date||"")==="2021-11-01T02:02:02Z"
+    String(dataId || "") === "123456" &&
+    String(body?.id || "") === "123456" &&
+    String(body?.data?.id || "") === "123456" &&
+    String(body?.application_id || "") === "6890332303704097" &&
+    String(body?.action || "") === "updated" &&
+    String(body?.entity || "") === "preapproval" &&
+    String(body?.type || "") === "subscription_preapproval" &&
+    Number(body?.version) === 8 &&
+    String(body?.date || "") === "2021-11-01T02:02:02Z"
   );
 }
 
-function authRejection(reason,details={}){
-  console.warn("mercado_pago_webhook_auth_rejected",{
+function authRejection(reason, details = {}) {
+  console.warn("mercado_pago_webhook_auth_rejected", {
     reason,
     ...details
   });
 }
 
 /* ----------------------------- Order lookup ----------------------------- */
-async function orderByReference(reference){
-  if(!reference)return null;
+async function orderByReference(reference) {
+  if (!reference) return null;
 
-  const {rows}=await db.query(
-    "SELECT * FROM sales_orders WHERE id::text=$1 LIMIT 1",
-    [String(reference)]
-  );
+  const { rows } = await db.query("SELECT * FROM sales_orders WHERE id::text=$1 LIMIT 1", [
+    String(reference)
+  ]);
 
-  return rows[0]||null;
+  return rows[0] || null;
 }
 
-async function orderBySubscriptionId(subscriptionId){
-  if(!subscriptionId)return null;
+async function orderBySubscriptionId(subscriptionId) {
+  if (!subscriptionId) return null;
 
-  const {rows}=await db.query(
+  const { rows } = await db.query(
     "SELECT * FROM sales_orders WHERE provider_subscription_id=$1 ORDER BY created_at DESC LIMIT 1",
     [String(subscriptionId)]
   );
 
-  return rows[0]||null;
+  return rows[0] || null;
 }
 
-async function orderByPlanId(planId){
-  if(!planId)return null;
+async function orderByPlanId(planId) {
+  if (!planId) return null;
 
-  const {rows}=await db.query(
+  const { rows } = await db.query(
     "SELECT * FROM sales_orders WHERE provider_plan_id=$1 ORDER BY created_at DESC LIMIT 1",
     [String(planId)]
   );
 
-  return rows[0]||null;
+  return rows[0] || null;
 }
 
 /* ------------------------------ Event log ------------------------------- */
-async function recordEvent(data){
-  try{
+async function recordEvent(data) {
+  try {
     await db.query(
       `INSERT INTO sales_payment_events (
         provider_event_id,order_id,event_type,resource_id,
         status,status_detail,payload
       ) VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb)`,
       [
-        String(data.providerEventId||""),
-        data.orderId||null,
-        String(data.eventType||""),
-        String(data.resourceId||""),
-        String(data.status||""),
-        String(data.statusDetail||""),
-        JSON.stringify(data.payload||{})
+        String(data.providerEventId || ""),
+        data.orderId || null,
+        String(data.eventType || ""),
+        String(data.resourceId || ""),
+        String(data.status || ""),
+        String(data.statusDetail || ""),
+        JSON.stringify(data.payload || {})
       ]
     );
-  }catch(error){
+  } catch (error) {
     // Mercado Pago may redeliver the same event. The unique index makes this idempotent.
-    if(
-      String(error?.code||"")!=="23505"&&
-      !String(error?.message||"").includes("sales_payment_events_provider_unique")
-    ){
+    if (
+      String(error?.code || "") !== "23505" &&
+      !String(error?.message || "").includes("sales_payment_events_provider_unique")
+    ) {
       throw error;
     }
   }
 }
 
-function paymentRejection(order,payment,validation,eventType){
-  console.error("mercado_pago_payment_not_applied",{
-    orderId:String(order?.id||""),
-    paymentId:String(payment?.id||""),
+function paymentRejection(order, payment, validation, eventType) {
+  console.error("mercado_pago_payment_not_applied", {
+    orderId: String(order?.id || ""),
+    paymentId: String(payment?.id || ""),
     eventType,
-    reason:validation.reason
+    reason: validation.reason
   });
 }
 
 /* ------------------------- Payment state mutation ----------------------- */
-async function applyPayment(order,payment){
-  const status=normalizePaymentStatus(payment.status);
-  const detail=String(payment.status_detail||payment.status||"");
-  const paymentId=String(payment.id||"");
-  const subscriptionId=String(
-    payment.preapproval_id||
-    payment.subscription_id||
-    order.provider_subscription_id||
-    ""
+async function applyPayment(order, payment) {
+  const status = normalizePaymentStatus(payment.status);
+  const detail = String(payment.status_detail || payment.status || "");
+  const paymentId = String(payment.id || "");
+  const subscriptionId = String(
+    payment.preapproval_id || payment.subscription_id || order.provider_subscription_id || ""
   );
 
   await db.query(
@@ -189,10 +188,10 @@ async function applyPayment(order,payment){
          END,
          updated_at=now()
      WHERE id=$1`,
-    [order.id,paymentId,subscriptionId,status,detail]
+    [order.id, paymentId, subscriptionId, status, detail]
   );
 
-  if(status==="approved"&&order.lead_id){
+  if (status === "approved" && order.lead_id) {
     await db.query(
       `UPDATE sales_leads
        SET status='won',
@@ -203,162 +202,141 @@ async function applyPayment(order,payment){
     );
   }
 
-  const fresh=(
-    await db.query("SELECT * FROM sales_orders WHERE id=$1",[order.id])
-  ).rows[0];
+  const fresh = (await db.query("SELECT * FROM sales_orders WHERE id=$1", [order.id])).rows[0];
 
   await tryProvision(fresh);
   return fresh;
 }
 
 /* ------------------------------- Handler -------------------------------- */
-export default async function(req,res){
-  if(!allowMethods(req,res,methods))return;
+export default async function (req, res) {
+  if (!allowMethods(req, res, methods)) return;
   // Trimming protects against an accidental trailing newline when the secret
   // is copied from Mercado Pago into the deployment environment.
-  const secret=String(
-    await config.get("MERCADO_PAGO_WEBHOOK_SECRET")||""
-  ).trim();
-  if(!secret){
-    return res.status(503).json({error:"Webhook ainda não configurado."});
+  const secret = String((await config.get("MERCADO_PAGO_WEBHOOK_SECRET")) || "").trim();
+  if (!secret) {
+    return res.status(503).json({ error: "Webhook ainda não configurado." });
   }
 
-  const parts=signatureParts(req.headers?.["x-signature"]);
-  const requestId=String(req.headers?.["x-request-id"]||"");
-  const dataId=String(
-    req.query?.["data.id"]||
-    req.query?.data_id||
-    req.body?.data?.id||
-    ""
+  const parts = signatureParts(req.headers?.["x-signature"]);
+  const requestId = String(req.headers?.["x-request-id"] || "");
+  const dataId = String(
+    req.query?.["data.id"] || req.query?.data_id || req.body?.data?.id || ""
   ).toLowerCase();
 
-  if(!parts.ts||!parts.v1||!requestId||!dataId){
-    authRejection("missing_signature_fields",{
-      hasTimestamp:Boolean(parts.ts),
-      hasSignature:Boolean(parts.v1),
-      hasRequestId:Boolean(requestId),
-      hasDataId:Boolean(dataId)
+  if (!parts.ts || !parts.v1 || !requestId || !dataId) {
+    authRejection("missing_signature_fields", {
+      hasTimestamp: Boolean(parts.ts),
+      hasSignature: Boolean(parts.v1),
+      hasRequestId: Boolean(requestId),
+      hasDataId: Boolean(dataId)
     });
-    return res.status(401).json({error:"Assinatura ausente."});
+    return res.status(401).json({ error: "Assinatura ausente." });
   }
 
-  const manifest=signatureManifest({
+  const manifest = signatureManifest({
     dataId,
     requestId,
-    timestamp:parts.ts
+    timestamp: parts.ts
   });
-  const timestamp=normalizedTimestamp(parts.ts);
+  const timestamp = normalizedTimestamp(parts.ts);
 
-  if(timestamp===undefined){
+  if (timestamp === undefined) {
     authRejection("invalid_timestamp");
-    return res.status(401).json({error:"Assinatura inválida."});
+    return res.status(401).json({ error: "Assinatura inválida." });
   }
 
   // Validate the digest and freshness separately so production logs can
   // distinguish a wrong secret from an expired/replayed notification without
   // ever recording the secret, signature or request identifier.
-  const signatureMatches=await webhooks.verifyHmac({
-    raw:manifest,
-    signature:parts.v1,
+  const signatureMatches = await webhooks.verifyHmac({
+    raw: manifest,
+    signature: parts.v1,
     secret,
-    algorithm:"sha256",
-    encoding:"hex"
+    algorithm: "sha256",
+    encoding: "hex"
   });
 
-  if(!signatureMatches){
+  if (!signatureMatches) {
     authRejection("signature_mismatch");
-    return res.status(401).json({error:"Assinatura inválida."});
+    return res.status(401).json({ error: "Assinatura inválida." });
   }
 
-  const timestampAgeSeconds=Math.abs(
-    Math.floor(Date.now()/1000)-timestamp
-  );
+  const timestampAgeSeconds = Math.abs(Math.floor(Date.now() / 1000) - timestamp);
 
-  if(timestampAgeSeconds>600){
-    authRejection("expired_timestamp",{timestampAgeSeconds});
-    return res.status(401).json({error:"Assinatura inválida."});
+  if (timestampAgeSeconds > 600) {
+    authRejection("expired_timestamp", { timestampAgeSeconds });
+    return res.status(401).json({ error: "Assinatura inválida." });
   }
 
   // The simulator signs this request correctly but uses a deliberately
   // nonexistent resource. Acknowledge it without calling Mercado Pago or
   // touching the database. Real notifications continue through the normal
   // authoritative-resource lookup below.
-  if(isSignedSimulatorProbe({body:req.body,dataId})){
+  if (isSignedSimulatorProbe({ body: req.body, dataId })) {
     console.info("mercado_pago_webhook_simulator_probe_acknowledged");
-    return res.json({received:true,simulated:true});
+    return res.json({ received: true, simulated: true });
   }
 
-  const eventType=String(req.body?.type||req.query?.type||"");
-  const providerEventId=String(req.body?.id||"");
-  const resourceId=dataId;
+  const eventType = String(req.body?.type || req.query?.type || "");
+  const providerEventId = String(req.body?.id || "");
+  const resourceId = dataId;
 
-  try{
+  try {
     /* Standard payment notification. */
-    if(eventType==="payment"){
-      const payment=await mpFetch(
-        "/v1/payments/"+encodeURIComponent(resourceId)
-      );
+    if (eventType === "payment") {
+      const payment = await mpFetch("/v1/payments/" + encodeURIComponent(resourceId));
 
-      const order=
-        (await orderByReference(payment.external_reference))||
-        (await orderBySubscriptionId(
-          payment.preapproval_id||payment.subscription_id
-        ));
+      const order =
+        (await orderByReference(payment.external_reference)) ||
+        (await orderBySubscriptionId(payment.preapproval_id || payment.subscription_id));
 
       await recordEvent({
         providerEventId,
-        orderId:order?.id||null,
+        orderId: order?.id || null,
         eventType,
         resourceId,
-        status:payment.status,
-        statusDetail:payment.status_detail,
-        payload:payment
+        status: payment.status,
+        statusDetail: payment.status_detail,
+        payload: payment
       });
 
-      if(order){
-        const validation=validateProviderPayment(order,payment);
-        if(validation.ok)await applyPayment(order,payment);
-        else paymentRejection(order,payment,validation,eventType);
+      if (order) {
+        const validation = validateProviderPayment(order, payment);
+        if (validation.ok) await applyPayment(order, payment);
+        else paymentRejection(order, payment, validation, eventType);
       }
-    }
+    } else if (eventType === "subscription_preapproval") {
+      /* Subscription created/updated from a preapproval plan checkout. */
+      const subscription = await mpFetch("/preapproval/" + encodeURIComponent(resourceId));
 
-    /* Subscription created/updated from a preapproval plan checkout. */
-    else if(eventType==="subscription_preapproval"){
-      const subscription=await mpFetch(
-        "/preapproval/"+encodeURIComponent(resourceId)
-      );
-
-      const order=
-        (await orderByReference(subscription.external_reference))||
+      const order =
+        (await orderByReference(subscription.external_reference)) ||
         (await orderByPlanId(subscription.preapproval_plan_id));
 
       await recordEvent({
         providerEventId,
-        orderId:order?.id||null,
+        orderId: order?.id || null,
         eventType,
         resourceId,
-        status:subscription.status,
-        statusDetail:subscription.status,
-        payload:subscription
+        status: subscription.status,
+        statusDetail: subscription.status,
+        payload: subscription
       });
 
-      if(order){
+      if (order) {
         await db.query(
           `UPDATE sales_orders
            SET provider_subscription_id=$2,
                subscription_status=$3,
                updated_at=now()
            WHERE id=$1`,
-          [
-            order.id,
-            String(subscription.id||""),
-            String(subscription.status||"")
-          ]
+          [order.id, String(subscription.id || ""), String(subscription.status || "")]
         );
 
-        const subscriptionState=String(subscription.status||"").toLowerCase();
+        const subscriptionState = String(subscription.status || "").toLowerCase();
 
-        if(["cancelled","paused"].includes(subscriptionState)){
+        if (["cancelled", "paused"].includes(subscriptionState)) {
           await db.query(
             `UPDATE sales_orders
              SET payment_status='cancelled',
@@ -366,86 +344,69 @@ export default async function(req,res){
                  cancelled_at=COALESCE(cancelled_at,now()),
                  updated_at=now()
              WHERE id=$1`,
-            [order.id,"subscription_"+subscriptionState]
+            [order.id, "subscription_" + subscriptionState]
           );
 
-          const fresh=(
-            await db.query("SELECT * FROM sales_orders WHERE id=$1",[order.id])
-          ).rows[0];
+          const fresh = (await db.query("SELECT * FROM sales_orders WHERE id=$1", [order.id]))
+            .rows[0];
 
           await tryProvision(fresh);
         }
       }
-    }
+    } else if (eventType === "subscription_authorized_payment") {
+      /* Recurring charge authorized by an existing subscription. */
+      const invoice = await mpFetch("/authorized_payments/" + encodeURIComponent(resourceId));
 
-    /* Recurring charge authorized by an existing subscription. */
-    else if(eventType==="subscription_authorized_payment"){
-      const invoice=await mpFetch(
-        "/authorized_payments/"+encodeURIComponent(resourceId)
-      );
+      const summarizedPayment = invoice.payment || {};
+      const authorizedPaymentId = String(summarizedPayment.id || invoice.payment_id || "");
+      const payment = authorizedPaymentId
+        ? await mpFetch("/v1/payments/" + encodeURIComponent(authorizedPaymentId))
+        : summarizedPayment;
 
-      const summarizedPayment=invoice.payment||{};
-      const authorizedPaymentId=String(
-        summarizedPayment.id||invoice.payment_id||""
-      );
-      const payment=authorizedPaymentId
-        ?await mpFetch(
-          "/v1/payments/"+encodeURIComponent(authorizedPaymentId)
-        )
-        :summarizedPayment;
-
-      const order=
-        (await orderByReference(
-          payment.external_reference||invoice.external_reference
-        ))||
-        (await orderBySubscriptionId(
-          payment.preapproval_id||invoice.preapproval_id
-        ));
+      const order =
+        (await orderByReference(payment.external_reference || invoice.external_reference)) ||
+        (await orderBySubscriptionId(payment.preapproval_id || invoice.preapproval_id));
 
       await recordEvent({
         providerEventId,
-        orderId:order?.id||null,
+        orderId: order?.id || null,
         eventType,
         resourceId,
-        status:payment.status||invoice.summarized||invoice.status,
-        statusDetail:
-          payment.status_detail||invoice.summarized||invoice.status,
-        payload:{invoice,payment}
+        status: payment.status || invoice.summarized || invoice.status,
+        statusDetail: payment.status_detail || invoice.summarized || invoice.status,
+        payload: { invoice, payment }
       });
 
-      if(order&&payment.status){
-        const authoritativePayment={
+      if (order && payment.status) {
+        const authoritativePayment = {
           ...payment,
-          id:payment.id||"",
-          preapproval_id:
-            invoice.preapproval_id||order.provider_subscription_id
+          id: payment.id || "",
+          preapproval_id: invoice.preapproval_id || order.provider_subscription_id
         };
-        const validation=validateProviderPayment(order,authoritativePayment);
-        if(validation.ok)await applyPayment(order,authoritativePayment);
-        else paymentRejection(order,authoritativePayment,validation,eventType);
+        const validation = validateProviderPayment(order, authoritativePayment);
+        if (validation.ok) await applyPayment(order, authoritativePayment);
+        else paymentRejection(order, authoritativePayment, validation, eventType);
       }
-    }
-
-    /* Unknown provider events are still retained for audit/debugging. */
-    else{
+    } else {
+      /* Unknown provider events are still retained for audit/debugging. */
       await recordEvent({
         providerEventId,
         eventType,
         resourceId,
-        payload:req.body||{}
+        payload: req.body || {}
       });
     }
 
-    return res.json({received:true});
-  }catch(error){
-    console.error("mercado_pago_webhook_error",{
+    return res.json({ received: true });
+  } catch (error) {
+    console.error("mercado_pago_webhook_error", {
       eventType,
       resourceId,
-      message:String(error?.message||error)
+      message: String(error?.message || error)
     });
 
     return res.status(500).json({
-      error:"Falha ao processar a notificação."
+      error: "Falha ao processar a notificação."
     });
   }
 }

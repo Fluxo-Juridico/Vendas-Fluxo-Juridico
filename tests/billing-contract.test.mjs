@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
-import {createHash} from "node:crypto";
+import { createHash } from "node:crypto";
 import {
   BILLING_CONTRACT_VERSION,
   BILLING_CONTRACT_FINGERPRINT,
@@ -9,69 +9,78 @@ import {
   automationForPaymentStatus,
   contractDescriptor
 } from "../contracts/billing-v1.js";
-import {validateProviderPayment} from "../server/lib/billing.js";
+import { validateProviderPayment } from "../server/lib/billing.js";
 
-test("vendas usa fingerprint íntegro do billing-v1",()=>{
-  assert.equal(BILLING_CONTRACT_VERSION,"billing-v1");
-  assert.equal(createHash("sha256").update(contractDescriptor()).digest("hex"),BILLING_CONTRACT_FINGERPRINT);
+test("vendas usa fingerprint íntegro do billing-v1", () => {
+  assert.equal(BILLING_CONTRACT_VERSION, "billing-v1");
+  assert.equal(
+    createHash("sha256").update(contractDescriptor()).digest("hex"),
+    BILLING_CONTRACT_FINGERPRINT
+  );
   assert.deepEqual(
-    Object.fromEntries(Object.entries(PLAN_CATALOG).map(([name,p])=>[name,[p.price,p.seats,p.storageGb]])),
-    {Solo:[99,2,5],Essencial:[197,3,15],Profissional:[297,10,25],Premium:[497,20,100]}
+    Object.fromEntries(
+      Object.entries(PLAN_CATALOG).map(([name, p]) => [name, [p.price, p.seats, p.storageGb]])
+    ),
+    {
+      Solo: [99, 2, 5],
+      Essencial: [197, 3, 15],
+      Profissional: [297, 10, 25],
+      Premium: [497, 20, 100]
+    }
   );
 });
 
-test("automação de pagamento é conservadora",()=>{
-  assert.equal(automationForPaymentStatus("approved"),"activate");
-  assert.equal(automationForPaymentStatus("refunded"),"block");
-  assert.equal(automationForPaymentStatus("charged_back"),"block");
-  assert.equal(automationForPaymentStatus("cancelled"),"block");
-  assert.equal(automationForPaymentStatus("in_mediation"),"review");
-  assert.equal(automationForPaymentStatus("pending"),"none");
-  assert.equal(automationForPaymentStatus("rejected"),"none");
+test("automação de pagamento é conservadora", () => {
+  assert.equal(automationForPaymentStatus("approved"), "activate");
+  assert.equal(automationForPaymentStatus("refunded"), "block");
+  assert.equal(automationForPaymentStatus("charged_back"), "block");
+  assert.equal(automationForPaymentStatus("cancelled"), "block");
+  assert.equal(automationForPaymentStatus("in_mediation"), "review");
+  assert.equal(automationForPaymentStatus("pending"), "none");
+  assert.equal(automationForPaymentStatus("rejected"), "none");
 });
 
-
-test("configuração de produção não altera o contrato billing-v1",()=>{
-  const source=fs.readFileSync(new URL("../server/lib/billing.js",import.meta.url),"utf8");
-  assert.equal(source.includes('config.get("plan_'),false);
-  assert.match(source,/prices:fromCatalog\("price"\)/);
-  assert.match(source,/seats:fromCatalog\("seats"\)/);
-  assert.match(source,/storageGb:fromCatalog\("storageGb"\)/);
+test("configuração de produção não altera o contrato billing-v1", () => {
+  const source = fs.readFileSync(new URL("../server/lib/billing.js", import.meta.url), "utf8");
+  assert.equal(source.includes('config.get("plan_'), false);
+  assert.match(source, /prices:\s*fromCatalog\("price"\)/);
+  assert.match(source, /seats:\s*fromCatalog\("seats"\)/);
+  assert.match(source, /storageGb:\s*fromCatalog\("storageGb"\)/);
 });
 
-test("pagamento autorizado precisa corresponder integralmente ao pedido",()=>{
-  const order={
-    id:"order-1",
-    amount_cents:9900,
-    currency:"BRL",
-    provider_subscription_id:"subscription-1"
+test("pagamento autorizado precisa corresponder integralmente ao pedido", () => {
+  const order = {
+    id: "order-1",
+    amount_cents: 9900,
+    currency: "BRL",
+    provider_subscription_id: "subscription-1"
   };
-  const payment={
-    id:"payment-1",
-    transaction_amount:99,
-    currency_id:"BRL",
-    external_reference:"order-1",
-    preapproval_id:"subscription-1"
+  const payment = {
+    id: "payment-1",
+    transaction_amount: 99,
+    currency_id: "BRL",
+    external_reference: "order-1",
+    preapproval_id: "subscription-1"
   };
 
-  assert.deepEqual(validateProviderPayment(order,payment),{
-    ok:true,
-    reason:"verified"
+  assert.deepEqual(validateProviderPayment(order, payment), {
+    ok: true,
+    reason: "verified"
   });
   assert.equal(
-    validateProviderPayment(order,{...payment,transaction_amount:9.9}).reason,
+    validateProviderPayment(order, { ...payment, transaction_amount: 9.9 }).reason,
     "amount_mismatch"
   );
   assert.equal(
-    validateProviderPayment(order,{...payment,currency_id:"USD"}).reason,
+    validateProviderPayment(order, { ...payment, currency_id: "USD" }).reason,
     "currency_mismatch"
   );
   assert.equal(
-    validateProviderPayment(order,{...payment,external_reference:"other"}).reason,
+    validateProviderPayment(order, { ...payment, external_reference: "other" }).reason,
     "external_reference_mismatch"
   );
   assert.equal(
-    validateProviderPayment(order,{...payment,preapproval_id:"other"}).reason,
+    validateProviderPayment(order, { ...payment, preapproval_id: "other" }).reason,
     "subscription_mismatch"
   );
 });

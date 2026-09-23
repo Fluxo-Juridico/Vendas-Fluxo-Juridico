@@ -36,11 +36,7 @@ export const REPOSITORY_BOUNDARIES = Object.freeze({
   }),
   admin: Object.freeze({
     repository: "Administrativo-Fluxo-Juridico",
-    owns: Object.freeze([
-      "platform-administration",
-      "customer-access",
-      "billing-observability"
-    ])
+    owns: Object.freeze(["platform-administration", "customer-access", "billing-observability"])
   })
 });
 
