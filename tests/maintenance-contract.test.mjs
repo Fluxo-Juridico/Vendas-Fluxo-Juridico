@@ -58,7 +58,6 @@ test("API observability keeps raw exception details out of logs", () => {
   assert.match(http, /durationMs:/);
 });
 
-
 test("checkout telemetry stores stable codes instead of raw provider errors", () => {
   assert.match(checkoutApi, /failureCode/);
   assert.match(checkoutApi, /checkout_provider_error/);
