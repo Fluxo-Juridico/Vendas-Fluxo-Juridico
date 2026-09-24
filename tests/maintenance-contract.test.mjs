@@ -5,6 +5,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../sales-theme.css", import.meta.url), "utf8");
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const checkoutApi = readFileSync(new URL("../server/api/checkout.js", import.meta.url), "utf8");
 
 test("sales site loads the canonical stylesheet layers only", () => {
   assert.match(html, /\/site\.css/);
@@ -55,4 +56,14 @@ test("API observability keeps raw exception details out of logs", () => {
   assert.doesNotMatch(http, /error\?\.message/);
   assert.match(http, /statusCode:/);
   assert.match(http, /durationMs:/);
+});
+
+
+test("checkout telemetry stores stable codes instead of raw provider errors", () => {
+  assert.match(checkoutApi, /failureCode/);
+  assert.match(checkoutApi, /checkout_provider_error/);
+  assert.doesNotMatch(checkoutApi, /internalMessage/);
+  assert.doesNotMatch(checkoutApi, /message:\s*internalMessage/);
+  assert.match(checkoutApi, /Fluxo Jurídico — Plano/);
+  assert.doesNotMatch(checkoutApi, /Escritório Digital — Plano/);
 });
