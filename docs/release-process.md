@@ -32,3 +32,11 @@ A produção usa `main` como branch de publicação. Mudanças normais não deve
 - não editar artefatos gerados como fonte;
 - mudanças em billing, Auth, permissões, checkout ou banco exigem teste explícito no PR;
 - alterações que dependam de variável de ambiente nova só podem ser integradas depois que a configuração de produção for confirmada.
+
+## Estado da proteção em 2026-09-24
+
+- O repositório é público e o plano GitHub Free pode aplicar proteção a `main`, mas a regra de PR/checks ainda não foi salva. Enquanto isso, um push direto pode disparar Production antes do Quality Gate terminar.
+- A regra preparada exige PR, `quality-gate`, `acquisition-e2e`, branch atualizada, conversas resolvidas e bloqueio de bypass; não exige aprovação de outro usuário porque não há revisor independente configurado. Confirmar a regra em Settings → Branches e o campo `protected` da API após aplicá-la.
+- `vercel.json` desativa deployments de branches diferentes de `main`; CI de PR não é um Preview hospedado. Habilitar Preview só com credenciais de teste, dados isolados, proteção de acesso e webhooks de teste para evitar pedidos reais.
+- Antes do primeiro cliente pagante: validar plano Vercel para uso comercial, identidade e contato nos textos legais, uma aquisição real controlada e o primeiro acesso ao SaaS. O teste `acquisition-e2e` automatizado não compra nem provisiona um cliente real.
+- Até a proteção entrar em vigor, conferir o SHA do PR e do CI antes do merge; verificar health e logs de Production depois da publicação.

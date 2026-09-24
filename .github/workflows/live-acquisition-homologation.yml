@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: "24"
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Verify real acquisition state
         env:
           SALES_BASE_URL: https://vendas-lilac.vercel.app
