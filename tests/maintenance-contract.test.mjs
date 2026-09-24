@@ -67,7 +67,6 @@ test("checkout telemetry stores stable codes instead of raw provider errors", ()
   assert.doesNotMatch(checkoutApi, /Escritório Digital — Plano/);
 });
 
-
 test("health endpoint avoids privileged Supabase internal schemas", () => {
   const health = readFileSync(new URL("../server/api/health.js", import.meta.url), "utf8");
   assert.match(health, /select 1 as ok/);
