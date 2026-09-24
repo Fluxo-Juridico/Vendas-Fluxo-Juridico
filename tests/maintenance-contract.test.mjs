@@ -5,6 +5,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../sales-theme.css", import.meta.url), "utf8");
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const checkoutApi = readFileSync(new URL("../server/api/checkout.js", import.meta.url), "utf8");
 
 test("sales site loads the canonical stylesheet layers only", () => {
   assert.match(html, /\/site\.css/);
@@ -46,4 +47,36 @@ test("canonical contracts are exported as a minimal installable package", () => 
   );
   assert.equal(existsSync(new URL("../contracts/engineering-v1.js", import.meta.url)), true);
   assert.equal(existsSync(new URL("../contracts/acquisition-v1.js", import.meta.url)), true);
+});
+
+test("API observability keeps raw exception details out of logs", () => {
+  const http = readFileSync(new URL("../server/lib/http.js", import.meta.url), "utf8");
+  assert.match(http, /api_unhandled_error/);
+  assert.doesNotMatch(http, /errorName|Unhandled API error/);
+  assert.doesNotMatch(http, /error\?\.message/);
+  assert.match(http, /statusCode:/);
+  assert.match(http, /durationMs:/);
+});
+
+test("checkout telemetry stores stable codes instead of raw provider errors", () => {
+  assert.match(checkoutApi, /failureCode/);
+  assert.match(checkoutApi, /checkout_provider_error/);
+  assert.doesNotMatch(checkoutApi, /internalMessage/);
+  assert.doesNotMatch(checkoutApi, /message:\s*internalMessage/);
+  assert.match(checkoutApi, /Fluxo Jurídico — Plano/);
+  assert.doesNotMatch(checkoutApi, /Escritório Digital — Plano/);
+});
+
+test("health endpoint avoids privileged Supabase internal schemas", () => {
+  const health = readFileSync(new URL("../server/api/health.js", import.meta.url), "utf8");
+  assert.match(health, /select 1 as ok/);
+  assert.match(health, /database: "ok"/);
+  assert.doesNotMatch(health, /supabase_migrations\.schema_migrations/);
+});
+
+test("production Vercel builds enforce predeploy guardrails", () => {
+  const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+  assert.match(vercel.buildCommand, /npm run build/);
+  assert.match(vercel.buildCommand, /VERCEL_ENV/);
+  assert.match(vercel.buildCommand, /npm run predeploy/);
 });

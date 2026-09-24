@@ -1,0 +1,47 @@
+name: Live Acquisition Homologation
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Verification stage
+        required: true
+        type: choice
+        options:
+          - preflight
+          - order
+          - provisioned
+          - first-access
+        default: preflight
+      order_id:
+        description: Real controlled test order UUID (required after preflight)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-acquisition-homologation
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Verify real acquisition state
+        env:
+          SALES_BASE_URL: https://vendas-lilac.vercel.app
+          LIVE_STAGE: ${{ inputs.stage }}
+          LIVE_ORDER_ID: ${{ inputs.order_id }}
+          LIVE_DATABASE_URL: ${{ secrets.LIVE_DATABASE_URL }}
+        run: node scripts/live-acquisition-homologation.mjs

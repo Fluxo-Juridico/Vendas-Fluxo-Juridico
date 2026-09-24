@@ -1,4 +1,7 @@
+import { existsSync, readdirSync } from "node:fs";
+
 const errors = [];
+const FUNCTION_BUDGET = 10;
 
 function required(name) {
   const value = String(process.env[name] || "").trim();
@@ -57,10 +60,48 @@ for (const plan of ["SOLO", "ESSENCIAL", "PROFISSIONAL", "PREMIUM"]) {
   );
 }
 
+const apiRoot = new URL("../api/", import.meta.url);
+const generatedFunctions = existsSync(apiRoot)
+  ? readdirSync(apiRoot, { recursive: true })
+      .map((entry) => String(entry).replaceAll("\\", "/"))
+      .filter((entry) => entry.endsWith(".js"))
+  : [];
+
+if (generatedFunctions.length > FUNCTION_BUDGET) {
+  errors.push(
+    `Vercel Function engineering budget exceeded: ${generatedFunctions.length}/${FUNCTION_BUDGET}. Keep at least two slots below the Hobby limit.`
+  );
+}
+
+if (!generatedFunctions.includes("internal/[route].js")) {
+  errors.push("Consolidated internal Vercel Function api/internal/[route].js is missing.");
+}
+
+for (const legacy of [
+  "internal/billing-export.js",
+  "internal/crm-export.js",
+  "internal/crm-update.js",
+  "internal/subscription-management.js"
+]) {
+  if (generatedFunctions.includes(legacy)) {
+    errors.push(`Legacy internal wrapper must remain consolidated: api/${legacy}`);
+  }
+}
+
 if (errors.length) {
   console.error(JSON.stringify({ ok: false, app: "fluxo-juridico-vendas", errors }, null, 2));
   process.exit(1);
 }
 console.log(
-  JSON.stringify({ ok: true, app: "fluxo-juridico-vendas", billingContract: "billing-v1" }, null, 2)
+  JSON.stringify(
+    {
+      ok: true,
+      app: "fluxo-juridico-vendas",
+      billingContract: "billing-v1",
+      vercelFunctions: generatedFunctions.length,
+      functionBudget: FUNCTION_BUDGET
+    },
+    null,
+    2
+  )
 );

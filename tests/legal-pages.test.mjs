@@ -27,12 +27,19 @@ test("source-time Vercel wrapper exists for the consolidated legal function", ()
   assert.equal(existsSync(new URL("../api/privacy.js", import.meta.url)), false);
 });
 
-test("Vercel source function count stays within the Hobby deployment budget", () => {
+test("Vercel source function count keeps engineering headroom below the Hobby limit", () => {
   const apiFiles = readdirSync(new URL("../api/", import.meta.url), { recursive: true }).filter(
     (entry) => String(entry).endsWith(".js")
   );
   assert.ok(
-    apiFiles.length <= 12,
-    `Vercel Hobby allows at most 12 Functions; current source count is ${apiFiles.length}`
+    apiFiles.length <= 10,
+    `Engineering budget allows at most 10 Functions to keep Hobby headroom; current source count is ${apiFiles.length}`
   );
+});
+
+test("internal platform APIs are consolidated into one Vercel Function", () => {
+  const internalFiles = readdirSync(new URL("../api/internal/", import.meta.url))
+    .map((entry) => String(entry))
+    .sort();
+  assert.deepEqual(internalFiles, ["[route].js"]);
 });

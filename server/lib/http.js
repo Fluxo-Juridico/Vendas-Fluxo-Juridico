@@ -84,21 +84,9 @@ export function wrapHandler(handler, { service = "api" } = {}) {
     const path = String(req.url || "")
       .split("?")[0]
       .slice(0, 300);
-    console.info(
-      JSON.stringify({
-        level: "info",
-        event: "api_request_start",
-        service: String(service || "api").slice(0, 80),
-        requestId: req.requestId || "",
-        method,
-        path
-      })
-    );
     res.once?.("finish", () => {
       console.info(
         JSON.stringify({
-          level: "info",
-          event: "api_request_complete",
           service: String(service || "api").slice(0, 80),
           requestId: req.requestId || "",
           method,
@@ -110,19 +98,16 @@ export function wrapHandler(handler, { service = "api" } = {}) {
     });
     try {
       return await handler(req, res);
-    } catch (error) {
+    } catch {
       console.error(
         JSON.stringify({
-          level: "error",
           event: "api_unhandled_error",
           service: String(service || "api").slice(0, 80),
           requestId: req.requestId || "",
-          method: String(req.method || ""),
-          path: String(req.url || "")
-            .split("?")[0]
-            .slice(0, 300),
-          errorName: String(error?.name || "Error").slice(0, 120),
-          message: String(error?.message || "Unhandled API error").slice(0, 500)
+          method,
+          path,
+          statusCode: 500,
+          durationMs: Date.now() - startedAt
         })
       );
       if (res.headersSent) return;
