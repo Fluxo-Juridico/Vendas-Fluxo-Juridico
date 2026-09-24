@@ -73,3 +73,11 @@ test("health endpoint avoids privileged Supabase internal schemas", () => {
   assert.match(health, /database: "ok"/);
   assert.doesNotMatch(health, /supabase_migrations\.schema_migrations/);
 });
+
+
+test("production Vercel builds enforce predeploy guardrails", () => {
+  const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+  assert.match(vercel.buildCommand, /npm run build/);
+  assert.match(vercel.buildCommand, /VERCEL_ENV/);
+  assert.match(vercel.buildCommand, /npm run predeploy/);
+});
