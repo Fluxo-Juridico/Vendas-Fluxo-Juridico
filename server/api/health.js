@@ -7,10 +7,7 @@ export const methods = ["GET"];
 
 export default async function (req, res) {
   if (!allowMethods(req, res, methods)) return;
-  const { rows } = await db.query(
-    "select version,name from supabase_migrations.schema_migrations order by version desc limit 1"
-  );
-  const migration = rows[0] || {};
+  await db.query("select 1 as ok");
   return res.json({
     status: "ok",
     service: "fluxo-juridico-vendas",
@@ -18,8 +15,7 @@ export default async function (req, res) {
     release: {
       commitSha: String(process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || "local"),
       billingContract: BILLING_CONTRACT_VERSION,
-      migrationVersion: String(migration.version || ""),
-      migrationName: String(migration.name || "")
+      database: "ok"
     }
   });
 }
