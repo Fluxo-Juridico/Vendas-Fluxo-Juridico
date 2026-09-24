@@ -188,7 +188,7 @@ export default async function (req, res) {
       method: "POST",
       idempotencyKey: orderId,
       body: {
-        reason: "Escritório Digital — Plano " + plan,
+        reason: "Fluxo Jurídico — Plano " + plan,
         auto_recurring: {
           frequency: 1,
           frequency_type: "months",
@@ -232,13 +232,15 @@ export default async function (req, res) {
       privacyVersion: PRIVACY_VERSION
     });
   } catch (error) {
-    const internalMessage = clean(error?.message || error, 500);
+    const upstreamCode = clean(error?.code, 80).replace(/[^A-Za-z0-9._:-]/g, "");
+    const failureCode = upstreamCode || "checkout_provider_error";
 
-    // The order may not exist yet if lead/order creation failed.
+    // Persist only a stable diagnostic code. Provider messages may contain
+    // credentials, identifiers or other sensitive implementation details.
     try {
       await db.query(
         "UPDATE sales_orders SET payment_status='checkout_error',failure_reason=$2,updated_at=now() WHERE id=$1",
-        [orderId, internalMessage]
+        [orderId, failureCode]
       );
     } catch {
       console.warn("checkout_failure_update_skipped", { orderId });
@@ -247,10 +249,10 @@ export default async function (req, res) {
     console.error("checkout_create_failed", {
       orderId,
       plan,
-      message: internalMessage
+      failureCode
     });
 
-    return res.status(error?.code === "billing_setup_required" ? 503 : 502).json({
+    return res.status(failureCode === "billing_setup_required" ? 503 : 502).json({
       error:
         "Não foi possível abrir o pagamento agora. Nenhuma cobrança foi realizada. Tente novamente em instantes."
     });
