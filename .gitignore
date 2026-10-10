@@ -9,3 +9,6 @@ node_modules/
 public/
 
 # Adaptadores de API versionados para descoberta das Functions no Vercel.
+
+playwright-report/
+test-results/

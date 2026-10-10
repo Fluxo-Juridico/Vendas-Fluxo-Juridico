@@ -226,7 +226,9 @@
     e.preventDefault();
     const button = form.querySelector("button[type=submit]"),
       original = button.innerHTML;
+    if (button.disabled) return;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     button.textContent = "Enviando…";
     formStatus.textContent = "";
     try {
@@ -246,6 +248,7 @@
       formStatus.className = "error";
     } finally {
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
       button.innerHTML = original;
     }
   });
@@ -387,7 +390,9 @@
       checkoutStatus.className = "error";
       return;
     }
+    if (button.disabled) return;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     button.textContent = "Abrindo pagamento…";
     checkoutStatus.textContent = "";
     checkoutStatus.className = "";
@@ -406,6 +411,7 @@
       checkoutStatus.textContent = error.message;
       checkoutStatus.className = "error";
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
       button.innerHTML = original;
     }
   });

@@ -1273,3 +1273,25 @@ summary:focus-visible{
     font-size:13px!important;
   }
 }
+
+/* Same product mark and Fluent symbols used in the SaaS. */
+.logo img{display:block;width:44px;height:44px;object-fit:contain}
+.logo{background:transparent!important;border:0!important;box-shadow:none!important}
+.fj-icon{width:24px;height:24px;fill:currentColor;flex:none}
+.icon-orbit{display:grid;place-items:center;color:var(--sales-blue)}
+.icon-orbit .fj-icon{width:28px;height:28px}
+button[aria-busy=true]{cursor:wait;opacity:.7}
+.nav .brand{flex-shrink:0}.nav .brand strong{white-space:nowrap}
+.checkout-dialog{max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);overflow:auto}
+input,select,textarea{min-width:0}
+@media(max-width:760px){
+ .nav{gap:12px;flex-wrap:wrap}.nav .brand{flex:1 1 auto}
+ .nav-actions{gap:8px}.nav-actions a{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+ .nav nav{order:3;display:flex!important;width:100%;overflow-x:auto;gap:20px;white-space:nowrap;padding:8px 0;scrollbar-width:thin}
+ .nav nav a{min-height:32px;display:inline-flex;align-items:center}
+ .checkout-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:420px){
+ .nav .brand small{display:none}.nav .brand strong{font-size:14px}.nav .logo img{width:36px;height:36px}
+ .nav-actions .login{padding:8px}.nav-actions .nav-cta{padding:10px;font-size:12px}
+}
