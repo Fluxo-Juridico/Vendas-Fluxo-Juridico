@@ -39,6 +39,14 @@ test("liberação exige confirmação da identidade e não aceita apenas HTTP 20
         confirmed ? /provisioning_status=\$2/ : /provisioning_status='retry'/
       );
     }
+    globalThis.fetch = async () =>
+      new globalThis.Response(
+        JSON.stringify({ ok: true, idempotent: true, reapplied: false, access: null }),
+        { status: 200 }
+      );
+    assert.equal(await tryProvision(order), true);
+    assert.match(writes.at(-1).sql, /CASE WHEN provisioning_status/);
+    assert.doesNotMatch(writes.at(-1).sql, /provisioning_status='retry'/);
   } finally {
     db.query = original.query;
     config.get = original.get;
