@@ -1,3 +1,4 @@
+import { notifyOrder } from "./transactional-email.js";
 import { db, config } from "@fluxo-juridico/runtime";
 import {
   BILLING_CONTRACT_VERSION,
@@ -272,6 +273,7 @@ export async function tryProvision(order) {
   const cfg = await settings();
   const status = normalizePaymentStatus(order.payment_status);
   const action = automationFor(status);
+  if (status === "approved") await notifyOrder(order, "purchase");
 
   if (action === "none" || (action === "activate" && !cfg.autoActivate)) return false;
 
@@ -351,6 +353,8 @@ export async function tryProvision(order) {
       [order.id, provisioningStatus, action]
     );
 
+    if (action === "activate")
+      await notifyOrder({ ...order, provisioning_status: "activated" }, "access");
     return true;
   } catch (error) {
     console.warn("billing_provision_retry", {
