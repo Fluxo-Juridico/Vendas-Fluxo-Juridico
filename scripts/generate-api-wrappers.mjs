@@ -45,6 +45,7 @@ await fs.mkdir(publicRoot, { recursive: true });
 for (const file of publicFiles) {
   await fs.copyFile(path.resolve(file), path.join(publicRoot, file));
 }
+await fs.cp(path.resolve("assets"), path.join(publicRoot, "assets"), { recursive: true });
 
 for (const source of directFiles) {
   const relative = path.relative(serverRoot, source);

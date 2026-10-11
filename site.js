@@ -15,6 +15,10 @@
   const $ = (q, root = document) => root.querySelector(q);
   const $$ = (q, root = document) => [...root.querySelectorAll(q)];
   const params = new URLSearchParams(location.search);
+  const syncMotionVisibility = () =>
+    document.documentElement.toggleAttribute("data-motion-paused", document.hidden);
+  document.addEventListener("visibilitychange", syncMotionVisibility);
+  syncMotionVisibility();
 
   /* Attribution persisted with leads for campaign/source analysis. */
   const attribution = {
@@ -55,26 +59,40 @@
    - workflow resets offscreen so it always starts at 01;
    - hero callouts pause offscreen to avoid unnecessary animation work. */
   const flowSection = $(".flow-section");
-  if (flowSection) {
+  const flowRail = $(".flow-rail");
+  if (flowSection && flowRail) {
+    const alignFlowLine = () => {
+      const nodes = $$("article b", flowRail);
+      if (nodes.length < 2) return;
+      const rail = flowRail.getBoundingClientRect();
+      const first = nodes[0].getBoundingClientRect();
+      const last = nodes.at(-1).getBoundingClientRect();
+      flowRail.style.setProperty("--flow-start", first.left + first.width / 2 - rail.left + "px");
+      flowRail.style.setProperty("--flow-end", rail.right - last.left - last.width / 2 + "px");
+      flowRail.style.setProperty("--flow-top", first.top + first.height / 2 - rail.top + "px");
+    };
+    alignFlowLine();
+    if ("ResizeObserver" in window) new window.ResizeObserver(alignFlowLine).observe(flowRail);
+    else addEventListener("resize", alignFlowLine, { passive: true });
     flowSection.classList.add("flow-reset");
     if ("IntersectionObserver" in window) {
       const flowObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.intersectionRatio >= 0.32) {
-              flowSection.classList.remove("flow-active");
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.08) {
+              if (flowSection.classList.contains("flow-active")) return;
               flowSection.classList.remove("flow-reset");
-              void flowSection.offsetWidth;
-              requestAnimationFrame(() => flowSection.classList.add("flow-active"));
-            } else if (entry.intersectionRatio <= 0.08) {
+              void flowRail.offsetWidth;
+              flowSection.classList.add("flow-active");
+            } else {
               flowSection.classList.remove("flow-active");
               flowSection.classList.add("flow-reset");
             }
           });
         },
-        { threshold: [0, 0.08, 0.32, 0.55] }
+        { threshold: [0, 0.08] }
       );
-      flowObserver.observe(flowSection);
+      flowObserver.observe(flowRail);
     } else {
       flowSection.classList.remove("flow-reset");
       flowSection.classList.add("flow-active");
@@ -226,7 +244,9 @@
     e.preventDefault();
     const button = form.querySelector("button[type=submit]"),
       original = button.innerHTML;
+    if (button.disabled) return;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     button.textContent = "Enviando…";
     formStatus.textContent = "";
     try {
@@ -246,6 +266,7 @@
       formStatus.className = "error";
     } finally {
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
       button.innerHTML = original;
     }
   });
@@ -387,7 +408,9 @@
       checkoutStatus.className = "error";
       return;
     }
+    if (button.disabled) return;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     button.textContent = "Abrindo pagamento…";
     checkoutStatus.textContent = "";
     checkoutStatus.className = "";
@@ -406,6 +429,7 @@
       checkoutStatus.textContent = error.message;
       checkoutStatus.className = "error";
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
       button.innerHTML = original;
     }
   });
