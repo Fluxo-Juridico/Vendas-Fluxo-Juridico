@@ -3,6 +3,7 @@ export const TERMS_HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/assets/favicon.svg?v=20261011" type="image/svg+xml">
 <title>Termos de Uso — Fluxo Jurídico</title>
 <meta name="description" content="Termos de Uso e contratação da plataforma Fluxo Jurídico.">
 <link rel="stylesheet" href="/site.css">
@@ -65,6 +66,7 @@ export const PRIVACY_HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/assets/favicon.svg?v=20261011" type="image/svg+xml">
 <title>Política de Privacidade — Fluxo Jurídico</title>
 <meta name="description" content="Política de Privacidade da plataforma Fluxo Jurídico.">
 <link rel="stylesheet" href="/site.css">
