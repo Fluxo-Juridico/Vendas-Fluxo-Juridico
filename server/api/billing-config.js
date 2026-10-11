@@ -1,5 +1,6 @@
 import { allowMethods } from "../lib/http.js";
 import { settings } from "../lib/billing.js";
+import { verifyCheckoutProvider } from "../lib/checkout-readiness.js";
 
 export const access = "public";
 export const methods = ["GET"];
@@ -15,6 +16,9 @@ export default async function (req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.json({
     enabled: cfg.enabled,
+    ...(String(req.query?.verify || "") === "1"
+      ? { verification: await verifyCheckoutProvider() }
+      : {}),
     saasUrl: cfg.saasBaseUrl || "",
     plans: {
       Solo: {
