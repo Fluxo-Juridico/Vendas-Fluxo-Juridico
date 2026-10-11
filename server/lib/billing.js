@@ -317,6 +317,15 @@ export async function tryProvision(order) {
     const response = await signedBridgeRequest(cfg.saasBaseUrl + "/api/billing-provision", payload);
 
     if (!response.ok) throw new Error("SaaS respondeu " + response.status);
+    const confirmation = await response.json().catch(() => ({}));
+    if (
+      confirmation.ok !== true ||
+      (action === "activate" && confirmation.access?.ready !== true)
+    ) {
+      throw Object.assign(new Error("A plataforma não confirmou a entrega do acesso."), {
+        code: "access_delivery_unconfirmed"
+      });
+    }
 
     const provisioningStatus =
       action === "activate" ? "activated" : action === "block" ? "blocked" : "review";

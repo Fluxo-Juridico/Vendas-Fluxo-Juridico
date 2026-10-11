@@ -22,7 +22,7 @@ export default async function (req, res) {
 
   const orderId = String(req.query?.order || "");
 
-  if (!/^[0-9a-f-]{36}$/i.test(orderId)) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)) {
     return res.status(400).json({ error: "Pedido inválido." });
   }
   if (
@@ -37,12 +37,13 @@ export default async function (req, res) {
 
   const { rows } = await db.query(
     `SELECT
-       id,plan,amount_cents,currency,
-       payment_status,payment_status_detail,
-       subscription_status,provisioning_status,
-       paid_at,updated_at
-     FROM sales_orders
-     WHERE id=$1
+       so.id,so.plan,so.amount_cents,so.currency,
+       so.payment_status,so.payment_status_detail,
+       so.subscription_status,so.provisioning_status,
+       so.paid_at,so.updated_at,pa.status AS access_status
+     FROM sales_orders so
+     LEFT JOIN platform_accounts pa ON lower(pa.email)=lower(so.buyer_email)
+     WHERE so.id=$1
      LIMIT 1`,
     [orderId]
   );
@@ -62,6 +63,9 @@ export default async function (req, res) {
     statusDetail: order.payment_status_detail,
     subscriptionStatus: order.subscription_status,
     provisioningStatus: order.provisioning_status,
+    accessStatus: ["active", "blocked", "pending"].includes(order.access_status)
+      ? order.access_status
+      : "unknown",
     paidAt: order.paid_at,
     updatedAt: order.updated_at
   });

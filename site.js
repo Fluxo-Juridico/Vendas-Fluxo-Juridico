@@ -423,7 +423,9 @@
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.error || "Não foi possível iniciar o pagamento.");
-      sessionStorage.setItem("ed:last-order", body.orderId);
+      try {
+        sessionStorage.setItem("ed:last-order", body.orderId);
+      } catch {}
       location.href = body.checkoutUrl;
     } catch (error) {
       checkoutStatus.textContent = error.message;
@@ -439,10 +441,18 @@
     const status = data.status,
       provision = data.provisioningStatus;
     if (status === "approved") {
-      if (provision === "activated") {
+      if (data.accessStatus === "blocked")
+        return {
+          cls: "problem",
+          html: "<strong>Pagamento aprovado. Acesso bloqueado.</strong> Seu escritório possui uma restrição de acesso. Entre em contato com a equipe Fluxo Jurídico para revisar a situação."
+        };
+      if (
+        provision === "activated" &&
+        (data.accessStatus === undefined || data.accessStatus === "active")
+      ) {
         return {
           cls: "approved",
-          html: "<strong>Pagamento aprovado e acesso liberado.</strong> As instruções do primeiro acesso foram enviadas para o e-mail usado na contratação. Se esse e-mail já possuía uma conta, você pode entrar normalmente. <small>Não encontrou a mensagem? Na tela de acesso, use “Esqueci minha senha”.</small>"
+          html: "<strong>Pagamento aprovado e acesso liberado.</strong> Para uma conta nova, confira no e-mail da contratação o convite para definir sua senha. Se você já possuía uma conta, entre com sua senha atual. <small>Não encontrou o convite? Confira o spam ou use “Esqueci minha senha” na tela de acesso.</small>"
         };
       }
       return {
@@ -480,11 +490,14 @@
       };
     return {
       cls: "pending",
-      html: "<strong>Status do pagamento:</strong> " + String(status || "em processamento") + "."
+      html: "<strong>Pagamento em processamento.</strong> Aguardando uma atualização do Mercado Pago."
     };
   }
+  let paymentReturnLoading = false;
   async function showPaymentReturn(orderId) {
-    if (!orderId || !checkoutResult) return;
+    if (!orderId || !checkoutResult || paymentReturnLoading) return;
+    paymentReturnLoading = true;
+    let pending = true;
     checkoutResult.classList.remove("hidden");
     checkoutResult.className = "checkout-result pending";
     checkoutResult.innerHTML =
@@ -507,29 +520,52 @@
         }
         checkoutResult.innerHTML =
           msg.html +
-          (data.status === "approved" && data.provisioningStatus === "activated" && loginHref
+          (data.status === "approved" &&
+          data.provisioningStatus === "activated" &&
+          (data.accessStatus === undefined || data.accessStatus === "active") &&
+          loginHref
             ? '<div class="result-actions"><a href="' +
               loginHref +
               '">Fazer primeiro acesso →</a></div>'
             : "");
-        if (!["pending", "created"].includes(data.status)) break;
+        pending =
+          ["pending", "created", "in_mediation"].includes(data.status) ||
+          (data.status === "approved" &&
+            (data.provisioningStatus !== "activated" ||
+              ["unknown", "pending"].includes(data.accessStatus)));
+        if (!pending) break;
       } catch (error) {
         checkoutResult.className = "checkout-result problem";
         checkoutResult.textContent = error.message;
         break;
       }
-      await new Promise((resolve) => setTimeout(resolve, 4000));
+      if (attempt < 9) await new Promise((resolve) => setTimeout(resolve, 4000));
+    }
+    paymentReturnLoading = false;
+    if (pending) {
+      const actions = document.createElement("div");
+      actions.className = "result-actions";
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = "Consultar novamente";
+      retry.onclick = () => showPaymentReturn(orderId);
+      actions.append(retry);
+      checkoutResult.append(actions);
     }
     checkoutResult.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   const checkoutReturn =
     params.get("checkout") === "return"
-      ? params.get("order") || sessionStorage.getItem("ed:last-order")
+      ? params.get("order") ||
+        (() => {
+          try {
+            return sessionStorage.getItem("ed:last-order");
+          } catch {
+            return "";
+          }
+        })()
       : "";
-  if (checkoutReturn) {
-    history.replaceState({}, "", location.pathname);
-  }
 
   /* Initial render. Runtime billing config is loaded before a payment-return
    message so the login destination always comes from SAAS_BASE_URL. */
