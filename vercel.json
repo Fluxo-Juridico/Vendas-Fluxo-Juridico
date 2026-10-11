@@ -65,7 +65,7 @@
     "api/jobs/retry-provisioning.js": {
       "includeFiles": "docs/email-templates/*.html"
     },
-    "api/internal/[route].js": {
+    "api/internal/*.js": {
       "includeFiles": "docs/email-templates/*.html"
     }
   }
