@@ -76,7 +76,7 @@ jobs:
       - name: Run acquisition browser flow
         run: npm run test:e2e
       - name: Upload browser diagnostics
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: acquisition-playwright-report
