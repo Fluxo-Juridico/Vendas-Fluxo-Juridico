@@ -57,5 +57,16 @@
       "destination": "/api/legal?document=privacy"
     }
   ],
-  "buildCommand": "npm run build && if [ \"$VERCEL_ENV\" = \"production\" ]; then npm run predeploy; fi"
+  "buildCommand": "npm run build && if [ \"$VERCEL_ENV\" = \"production\" ]; then npm run predeploy; fi",
+  "functions": {
+    "api/webhooks/mercado-pago.js": {
+      "includeFiles": "docs/email-templates/*.html"
+    },
+    "api/jobs/retry-provisioning.js": {
+      "includeFiles": "docs/email-templates/*.html"
+    },
+    "api/internal/*.js": {
+      "includeFiles": "docs/email-templates/*.html"
+    }
+  }
 }

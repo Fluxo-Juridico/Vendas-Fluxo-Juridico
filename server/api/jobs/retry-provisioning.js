@@ -1,3 +1,4 @@
+import { drainEmailOutbox } from "../../lib/transactional-email.js";
 import { timingSafeEqual } from "node:crypto";
 import { db } from "@fluxo-juridico/runtime";
 import { tryProvision } from "../../lib/billing.js";
@@ -83,11 +84,13 @@ export default async function (req, res) {
     remaining
   });
 
+  const emails = await drainEmailOutbox().catch(() => ({ configured: false, failed: 1 }));
   res.setHeader("Cache-Control", "no-store");
   res.json({
     checked: rows.length,
     synchronized,
     errors,
-    remaining
+    remaining,
+    emails
   });
 }
